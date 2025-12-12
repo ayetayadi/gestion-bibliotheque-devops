@@ -31,3 +31,14 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
