@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<header th:fragment="header" class="header">
+    <div class="header-left">
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <span class="app-title">📘 BiblioNet</span>
+    </div>
+
+    <div class="header-right">
+        <span class="user-info">
+            <strong th:text="${#authentication.name}"></strong>
+            <span class="role"
+                  th:text="${#authentication.authorities[0].authority}">
+            </span>
+        </span>
+
+        <form th:action="@{/logout}" method="post">
+            <button class="logout-btn">⎋</button>
+        </form>
+    </div>
+</header>
+
+</body>
+</html>
