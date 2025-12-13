@@ -1,9 +1,9 @@
 package com.bibliotheque.gestion_bibliotheque.security;
 
-import java.util.Collection;                 // ✅ IMPORT
-import java.util.Collections;               // ✅ IMPORT
+import java.util.Collection;               
+import java.util.Collections;           
 
-import org.springframework.security.core.GrantedAuthority;   // ✅ IMPORT
+import org.springframework.security.core.GrantedAuthority; 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 

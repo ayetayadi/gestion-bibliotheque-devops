@@ -2,7 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Connexion | Bibliothèque</title>
+    <title>Inscription | Bibliothèque</title>
 
     <style>
         * {
@@ -149,44 +149,43 @@
 <div class="container">
 
     <div class="logo">📘 Gestion de Bibliothèque</div>
-    <div class="subtitle">Connectez-vous à votre espace personnel</div>
+    <div class="subtitle">Créez votre compte lecteur</div>
 
     <div class="card">
-        <h2>Connexion</h2>
+        <h2>Inscription</h2>
 
-        <div th:if="${param.error}" class="error">
-            Email ou mot de passe incorrect
+        <div th:if="${error}" class="error">
+            <span th:text="${error}"></span>
         </div>
 
-        <div th:if="${param.logout}" class="error" style="background:#e0f2fe;color:#0369a1">
-            Vous êtes déconnecté avec succès
-        </div>
+        <form th:action="@{/register}" method="post" th:object="${utilisateur}">
 
-        <form th:action="@{/login}" method="post">
+            <label>Nom</label>
+            <input type="text" th:field="*{nom}" placeholder="Votre nom" required>
+
+            <label>Prénom</label>
+            <input type="text" th:field="*{prenom}" placeholder="Votre prénom" required>
 
             <label>Email</label>
-            <input type="email"
-                   name="email"
-                   placeholder="exemple@email.com"
-                   required>
+            <input type="email" th:field="*{email}" placeholder="exemple@email.com" required>
 
             <label>Mot de passe</label>
             <div class="password-wrapper">
                 <input type="password"
-                       name="password"
-                       id="loginPassword"
+                       th:field="*{motDePasse}"
+                       id="registerPassword"
                        placeholder="••••••••"
                        required>
                 <span class="toggle-password"
-                      onclick="togglePassword('loginPassword', this)">👁️</span>
+                      onclick="togglePassword('registerPassword', this)">👁️</span>
             </div>
 
-            <button type="submit">Se connecter</button>
+            <button type="submit">Créer un compte</button>
         </form>
 
         <div class="links">
-            Pas encore de compte ?
-            <a th:href="@{/register}">Créer un compte</a>
+            Déjà un compte ?
+            <a th:href="@{/login}">Se connecter</a>
         </div>
     </div>
 
