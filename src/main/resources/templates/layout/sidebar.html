@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<aside th:fragment="sidebar" id="sidebar" class="sidebar">
+
+    <nav>
+        <a th:href="@{/dashboard}">🏠 Dashboard</a>
+
+        <a th:if="${#authorization.expression('hasRole(''USAGER'')')}"
+           th:href="@{/mes-prets}">📚 Mes prêts</a>
+
+        <a th:if="${#authorization.expression('hasRole(''BIBLIOTHECAIRE'')')}"
+           th:href="@{/gestion-prets}">🔄 Gestion des prêts</a>
+
+        <a th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+           th:href="@{/admin/utilisateurs}">👥 Utilisateurs</a>
+    </nav>
+
+</aside>
+
+</body>
+</html>
