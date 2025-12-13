@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion | Bibliothèque</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #eef2ff, #f8fafc);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 26px;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #475569;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 30px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin: 0 0 20px;
+            text-align: center;
+            font-size: 20px;
+            color: #0f172a;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #cbd5f5;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 22px;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: #1e293b;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #020617;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .links {
+            margin-top: 18px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .links a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="logo">📘 Gestion de Bibliothèque</div>
+    <div class="subtitle">Connectez-vous à votre espace personnel</div>
+
+    <div class="card">
+        <h2>Connexion</h2>
+
+        <!-- message erreur -->
+        <div th:if="${param.error}" class="error">
+            Email ou mot de passe incorrect
+        </div>
+
+        <!-- message logout -->
+        <div th:if="${param.logout}" class="error" style="background:#e0f2fe;color:#0369a1">
+            Vous êtes déconnecté avec succès
+        </div>
+
+        <form th:action="@{/login}" method="post">
+
+            <label>Email</label>
+            <input type="email"
+                   name="email"
+                   placeholder="exemple@email.com"
+                   required>
+
+            <label>Mot de passe</label>
+            <input type="password"
+                   name="password"
+                   placeholder="••••••••"
+                   required>
+
+            <button type="submit">Se connecter</button>
+        </form>
+
+        <div class="links">
+            Pas encore de compte ?
+            <a th:href="@{/register}">Créer un compte</a>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
