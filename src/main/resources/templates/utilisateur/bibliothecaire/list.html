@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Bibliothécaires | BiblioNet</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+
+<div th:replace="layout/header :: header"></div>
+<div th:replace="layout/sidebar :: sidebar"></div>
+
+<main class="content">
+
+    <!-- PAGE HEADER -->
+<div class="page-header">
+    <div>
+        <h2>Gestion des bibliothécaires</h2>
+
+        <p class="text-muted">
+            Bibliothèque :
+            <strong th:text="${bibliotheque.nom}"></strong>
+            (<span th:text="${bibliotheque.adresse.ville}"></span>)
+        </p>
+    </div>
+
+        <a th:href="@{/admin/bibliothecaires/add}" class="btn btn-primary">
+            ➕ Ajouter un bibliothécaire
+        </a>
+    </div>
+
+    <!-- ALERTS -->
+    <div th:if="${success}" class="alert alert-success auto-hide">
+        <span th:text="${success}"></span>
+    </div>
+
+    <div th:if="${error}" class="alert alert-error auto-hide">
+        <span th:text="${error}"></span>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card">
+        <table class="table">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Nom</th>
+        <th>Email</th>
+        <th>Statut</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="b, stat : ${items}">
+        <td th:text="${stat.count}"></td>
+        <td th:text="${b.nom + ' ' + b.prenom}"></td>
+        <td th:text="${b.email}"></td>
+
+        <td>
+            <span th:if="${b.actif}" class="badge badge-green">Actif</span>
+            <span th:unless="${b.actif}" class="badge badge-red">Inactif</span>
+        </td>
+
+        <td class="actions">
+            <a th:href="@{/admin/bibliothecaires/edit/{id}(id=${b.id})}" class="btn btn-sm btn-warning">
+                ✏️ Modifier
+            </a>
+
+            <a th:href="@{/admin/bibliothecaires/delete/{id}(id=${b.id})}"
+               onclick="return confirm('Désactiver ce bibliothécaire ?')"
+               class="btn btn-sm btn-danger">
+                🗑 Désactiver
+            </a>
+        </td>
+    </tr>
+
+    <tr th:if="${#lists.isEmpty(items)}">
+        <td colspan="5" style="text-align:center;padding:20px;">
+            Aucun bibliothécaire trouvé
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+    </div>
+
+</main>
+
+<div th:replace="layout/footer :: footer"></div>
+
+<script>
+    setTimeout(() => {
+        document.querySelectorAll('.auto-hide')
+            .forEach(a => a.remove());
+    }, 3500);
+</script>
+
+</body>
+</html>

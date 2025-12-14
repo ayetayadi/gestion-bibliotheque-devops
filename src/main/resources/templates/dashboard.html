@@ -64,9 +64,6 @@
 </main>
 
 <div th:replace="layout/footer :: footer"></div>
-
-</body>
-
 <script>
 function toggleSidebar() {
     document.getElementById("sidebar").classList.toggle("hidden");
@@ -78,4 +75,6 @@ function toggleSubmenu(id) {
         submenu.style.display === "flex" ? "none" : "flex";
 }
 </script>
+</body>
+
 </html>
