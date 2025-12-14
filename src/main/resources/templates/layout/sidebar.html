@@ -9,7 +9,9 @@
         <!-- COMMUN -->
         <a th:href="@{/dashboard}" class="menu-item">🏠 Accueil</a>
         <a th:href="@{/catalogue}" class="menu-item">📚 Catalogue</a>
-
+<a th:href="@{/profile}" class="menu-item">
+    👤 Mon profil
+</a>
         <!-- ================= SUPER ADMIN ================= -->
         <div th:if="${#authorization.expression('hasRole(''SUPER_ADMIN'')')}">
 

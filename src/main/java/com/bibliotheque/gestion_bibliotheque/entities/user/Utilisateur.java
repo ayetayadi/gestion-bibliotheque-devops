@@ -39,5 +39,7 @@ public class Utilisateur {
 
     @Column(nullable = false)
     private LocalDateTime dateInscription = LocalDateTime.now();
-    
+    @Column(name = "photo")
+    private String photo; // ex: "profile_12.jpg"
+
 }
