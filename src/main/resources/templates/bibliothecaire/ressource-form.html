@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ressource | BiblioNet</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div th:replace="layout/header :: header"></div>
+
+<!-- SIDEBAR -->
+<div th:replace="layout/sidebar :: sidebar"></div>
+
+<main class="content">
+
+    <div class="page-header">
+        <div>
+            <h2>📘 Ressource</h2>
+            <p class="text-muted">Ajouter une nouvelle ressource</p>
+        </div>
+    </div>
+
+    <div class="card form-card">
+
+        <form th:action="@{/bibliothecaire/ressources/save}"
+              method="post"
+              enctype="multipart/form-data">
+
+            <div class="form-grid">
+
+                <!-- TITRE -->
+                <div class="form-group">
+                    <label>Titre</label>
+                    <input type="text" name="titre" required>
+                </div>
+
+                <!-- AUTEUR -->
+                <div class="form-group">
+                    <label>Auteur</label>
+                    <input type="text" name="auteur" required>
+                </div>
+
+                <!-- TYPE RESSOURCE -->
+                <div class="form-group">
+                    <label>Type de ressource</label>
+                    <select id="typeRessource" name="typeRessource" required onchange="afficherChampsSpecifiques()">
+                        <option value="LIVRE">Livre</option>
+                        <option value="MEDIA">Média</option>
+                        <option value="DOCUMENT_NUMERIQUE">Document numérique</option>
+                    </select>
+                </div>
+
+                <!-- CATEGORIE -->
+                <div class="form-group">
+                    <label>Catégorie</label>
+                    <select name="categorie" required>
+                        <option value="LITTERATURE">Littérature</option>
+                        <option value="SCIENCES">Sciences</option>
+                        <option value="HISTOIRE">Histoire</option>
+                        <option value="ARTS">Arts</option>
+                        <option value="TECHNOLOGIE">Technologie</option>
+                        <option value="JEUNESSE">Jeunesse</option>
+                        <option value="MULTIMEDIA">Multimédia</option>
+                    </select>
+                </div>
+
+                <!-- QUANTITÉ -->
+                <div class="form-group">
+                    <label>Quantité totale</label>
+                    <input type="number" name="quantiteTotale" min="1" required>
+                </div>
+
+                <!-- COUVERTURE (COMMUN) -->
+                <div class="form-group">
+                    <label>Couverture</label>
+                    <input type="file" name="couvertureFile" accept="image/*">
+                    <small class="form-hint">JPG / PNG – max 5 Mo</small>
+                </div>
+
+            </div>
+
+            <!-- ========= CHAMPS SPÉCIFIQUES ========= -->
+
+            <!-- LIVRE -->
+            <div class="card" id="fieldsLivre" style="display:none; margin-top:20px;">
+                <h3>📘 Informations Livre</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nombre de pages</label>
+                        <input type="number" name="nbPages" min="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Éditeur</label>
+                        <input type="text" name="editeur">
+                    </div>
+                </div>
+            </div>
+
+            <!-- MEDIA -->
+            <div class="card" id="fieldsMedia" style="display:none; margin-top:20px;">
+                <h3>🎬 Informations Média</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Durée (minutes)</label>
+                        <input type="number" name="dureeMinutes" min="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Type de média</label>
+                        <input type="text" name="typeMedia" placeholder="Audio, vidéo...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- DOCUMENT NUMERIQUE -->
+            <div class="card" id="fieldsDoc" style="display:none; margin-top:20px;">
+                <h3>💻 Document numérique</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Format fichier</label>
+                        <input type="text" name="formatFichier" placeholder="PDF, DOCX…">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Taille (Mo)</label>
+                        <input type="number" name="tailleMo" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label>URL d'accès</label>
+                        <input type="url" name="urlAcces">
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="form-actions" style="margin-top:20px;">
+                <a th:href="@{/bibliothecaire/ressources}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+            </div>
+
+        </form>
+
+    </div>
+
+</main>
+
+<script>
+    function afficherChampsSpecifiques() {
+        const type = document.getElementById("typeRessource").value;
+
+        document.getElementById("fieldsLivre").style.display = "none";
+        document.getElementById("fieldsMedia").style.display = "none";
+        document.getElementById("fieldsDoc").style.display = "none";
+
+        if (type === "LIVRE") {
+            document.getElementById("fieldsLivre").style.display = "block";
+        } else if (type === "MEDIA") {
+            document.getElementById("fieldsMedia").style.display = "block";
+        } else if (type === "DOCUMENT_NUMERIQUE") {
+            document.getElementById("fieldsDoc").style.display = "block";
+        }
+    }
+
+    // Afficher par défaut (LIVRE)
+    afficherChampsSpecifiques();
+</script>
+
+<div th:replace="layout/footer :: footer"></div>
+
+</body>
+</html>

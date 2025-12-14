@@ -41,4 +41,7 @@ public class Bibliotheque {
     // 1 Bibliothèque → * Bibliothécaires
     @OneToMany(mappedBy = "bibliotheque")
     private List<Utilisateur> utilisateurs;
+    @OneToMany(mappedBy = "bibliotheque", cascade = CascadeType.ALL)
+    private List<StockBibliotheque> stock;
+
 }

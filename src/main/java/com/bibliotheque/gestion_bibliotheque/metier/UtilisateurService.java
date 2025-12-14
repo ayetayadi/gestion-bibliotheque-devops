@@ -5,7 +5,6 @@ import com.bibliotheque.gestion_bibliotheque.entities.user.Role;
 import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -16,6 +15,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 
 @Service
@@ -130,8 +131,7 @@ public class UtilisateurService {
         Long bibliothequeId,
         Pageable pageable
 ) {
-    return utilisateurRepository
-            .findByBibliothequeId(bibliothequeId, pageable);
+    return utilisateurRepository.findByBibliothequeId(bibliothequeId, pageable);
 }
 
 // ======================= UPDATE BIBLIOTHECAIRE =======================
@@ -168,11 +168,7 @@ public void desactiverBibliothecaire(Long id, Utilisateur adminConnecte) {
 }
 
 
-    // ================= GET BY EMAIL =================
-    public Utilisateur getByEmail(String email) {
-        return utilisateurRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
-    }
+
 
     // ================= UPDATE PROFIL + PHOTO =================
     public void updateProfile(
@@ -218,4 +214,12 @@ public void desactiverBibliothecaire(Long id, Utilisateur adminConnecte) {
 
         utilisateurRepository.save(user);
     }
+    public Utilisateur getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        return utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+    }
+    
+    
 }

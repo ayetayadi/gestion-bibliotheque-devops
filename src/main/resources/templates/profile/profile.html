@@ -29,6 +29,7 @@
     <!-- CARD PRINCIPALE -->
     <div class="card">
 
+        <!-- HEADER PAGE -->
         <div class="page-header">
             <div>
                 <h2>Mon profil</h2>
@@ -39,7 +40,9 @@
         </div>
 
         <!-- FORM -->
-        <form th:action="@{/profile}" method="post" enctype="multipart/form-data">
+        <form th:action="@{/profile}"
+              method="post"
+              enctype="multipart/form-data">
 
             <div class="profile-layout">
 
@@ -47,18 +50,23 @@
                 <div class="profile-avatar">
 
                     <div class="avatar-wrapper">
-                        <img th:if="${user.photo}"
+                        <img th:if="${user.photo != null}"
                              th:src="@{'/uploads/profiles/' + ${user.photo}}"
-                             class="avatar-img"/>
+                             class="avatar-img"
+                             alt="Photo de profil"/>
 
-                        <img th:unless="${user.photo}"
+                        <img th:unless="${user.photo != null}"
                              src="/images/avatar-default.png"
-                             class="avatar-img"/>
+                             class="avatar-img"
+                             alt="Avatar par défaut"/>
                     </div>
 
                     <label class="btn btn-secondary btn-sm">
                         📷 Changer la photo
-                        <input type="file" name="photoFile" accept="image/*" hidden>
+                        <input type="file"
+                               name="photoFile"
+                               accept="image/png,image/jpeg"
+                               hidden>
                     </label>
 
                     <div class="form-hint">
@@ -72,21 +80,30 @@
                     <div class="form-grid">
 
                         <div class="form-group">
-                            <label>Nom</label>
-                            <input type="text" name="nom"
-                                   th:value="${user.nom}" required>
+                            <label for="nom">Nom</label>
+                            <input id="nom"
+                                   type="text"
+                                   name="nom"
+                                   th:value="${user.nom}"
+                                   required>
                         </div>
 
                         <div class="form-group">
-                            <label>Prénom</label>
-                            <input type="text" name="prenom"
-                                   th:value="${user.prenom}" required>
+                            <label for="prenom">Prénom</label>
+                            <input id="prenom"
+                                   type="text"
+                                   name="prenom"
+                                   th:value="${user.prenom}"
+                                   required>
                         </div>
 
                         <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" name="email"
-                                   th:value="${user.email}" required>
+                            <label for="email">Email</label>
+                            <input id="email"
+                                   type="email"
+                                   name="email"
+                                   th:value="${user.email}"
+                                   required>
                         </div>
 
                         <div class="form-group">
