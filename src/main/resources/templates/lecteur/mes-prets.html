@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+        <head>
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+
+</head>
+<body>
+
+<div th:replace="layout/header :: header"></div>
+<div th:replace="layout/sidebar :: sidebar"></div>
+
+<main class="content">
+    <h2>Mes prêts</h2>
+</main>
+
+<div th:replace="layout/footer :: footer"></div>
+
+</body>
+</html>

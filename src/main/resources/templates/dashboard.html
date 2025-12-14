@@ -4,139 +4,78 @@
     <meta charset="UTF-8">
     <title>Dashboard | BiblioNet</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: "Segoe UI", Arial, sans-serif;
-        }
+    <link rel="stylesheet" th:href="@{/css/main.css}">
 
-        body {
-            margin: 0;
-            background: #f1f5f9;
-        }
-
-        /* HEADER */
-        .header {
-            height: 60px;
-            background: #1e293b;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-        }
-
-        .menu-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 22px;
-            cursor: pointer;
-        }
-
-        .app-title {
-            font-weight: 700;
-            margin-left: 10px;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logout-btn {
-            background: #ef4444;
-            border: none;
-            color: white;
-            padding: 6px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: 220px;
-            background: #0f172a;
-            height: calc(100vh - 60px);
-            position: fixed;
-            top: 60px;
-            left: 0;
-            padding-top: 20px;
-            transition: transform 0.3s ease;
-        }
-
-        .sidebar a {
-            display: block;
-            padding: 12px 20px;
-            color: #e5e7eb;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .sidebar a:hover {
-            background: #1e293b;
-        }
-
-        .sidebar.hidden {
-            transform: translateX(-100%);
-        }
-
-        /* CONTENT */
-        .content {
-            margin-left: 220px;
-            padding: 30px;
-        }
-
-        /* FOOTER */
-        .footer {
-            text-align: center;
-            padding: 12px;
-            color: #475569;
-            font-size: 13px;
-        }
-    </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <div th:replace="layout/header :: header"></div>
-
-<!-- SIDEBAR -->
 <div th:replace="layout/sidebar :: sidebar"></div>
 
-<!-- CONTENT -->
 <main class="content">
-    <h2>Bienvenue sur votre dashboard</h2>
+    <div class="card">
 
-    <p>
-        Vous êtes connecté en tant que
-        <strong th:text="${#authentication.authorities[0].authority}"></strong>
-    </p>
+        <h2>Bienvenue sur BiblioNet</h2>
 
-    <!-- CONTENU PAR RÔLE -->
-    <div th:if="${#authorization.expression('hasRole(''USAGER'')')}">
-        📚 Consultez vos prêts et réservations
-    </div>
+        <p>
+            Connecté en tant que :
+            <strong th:text="${#authentication.authorities[0].authority}"></strong>
+        </p>
 
-    <div th:if="${#authorization.expression('hasRole(''BIBLIOTHECAIRE'')')}">
-        🔄 Gérez les prêts et ressources
-    </div>
+        <!-- ================= SUPER ADMIN ================= -->
+        <div th:if="${#authorization.expression('hasRole(''SUPER_ADMIN'')')}">
+            <h3>👑 Super Administrateur</h3>
+            <ul>
+                <li>Créer et gérer les bibliothèques</li>
+                <li>Créer et gérer les administrateurs</li>
+                <li>Vision globale du réseau</li>
+            </ul>
+        </div>
 
-    <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
-        📊 Accédez aux statistiques et utilisateurs
+        <!-- ================= ADMIN ================= -->
+        <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+            <h3>🛠 Administrateur</h3>
+            <ul>
+                <li>Gérer les bibliothécaires</li>
+                <li>Superviser sa bibliothèque</li>
+            </ul>
+        </div>
+
+        <!-- ================= BIBLIOTHÉCAIRE ================= -->
+        <div th:if="${#authorization.expression('hasRole(''BIBLIOTHECAIRE'')')}">
+            <h3>📚 Bibliothécaire</h3>
+            <ul>
+                <li>Gérer les prêts</li>
+                <li>Gérer les ressources</li>
+            </ul>
+        </div>
+
+        <!-- ================= LECTEUR ================= -->
+        <div th:if="${#authorization.expression('hasRole(''LECTEUR'')')}">
+            <h3>🙋 Lecteur</h3>
+            <ul>
+                <li>Consulter ses prêts</li>
+                <li>Gérer ses réservations</li>
+            </ul>
+        </div>
+
     </div>
 </main>
 
-<!-- FOOTER -->
 <div th:replace="layout/footer :: footer"></div>
 
-<script>
-    function toggleSidebar() {
-        document.getElementById("sidebar").classList.toggle("hidden");
-    }
-</script>
-
 </body>
+
+<script>
+function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("hidden");
+}
+
+function toggleSubmenu(id) {
+    const submenu = document.getElementById(id);
+    submenu.style.display =
+        submenu.style.display === "flex" ? "none" : "flex";
+}
+</script>
 </html>
