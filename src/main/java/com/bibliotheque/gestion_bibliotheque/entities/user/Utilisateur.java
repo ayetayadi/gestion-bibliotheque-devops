@@ -45,4 +45,8 @@ public class Utilisateur {
     @ManyToOne
     @JoinColumn(name = "bibliotheque_id")
     private Bibliotheque bibliotheque;
+
+    @Column(name = "photo")
+    private String photo; // ex: "profile_12.jpg"
+
 }

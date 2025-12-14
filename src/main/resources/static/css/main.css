@@ -398,6 +398,7 @@ body {
     cursor: pointer;
 }
 
+
 .pagination span {
     padding: 6px 12px;
     background: #f8fafc;
@@ -410,4 +411,49 @@ body {
 .pagination a.disabled {
     opacity: 0.4;
     pointer-events: none;
+
+
+
+/* ================= PROFILE ================= */
+
+.profile-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+.profile-avatar {
+    text-align: center;
+}
+
+.avatar-wrapper {
+    width: 160px;
+    height: 160px;
+    margin: 0 auto 15px;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e5e7eb;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+
+.profile-info {
+    width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .profile-layout {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .profile-info {
+        text-align: left;
+    }
 }

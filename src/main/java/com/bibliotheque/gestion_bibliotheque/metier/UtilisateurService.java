@@ -5,8 +5,18 @@ import com.bibliotheque.gestion_bibliotheque.entities.user.Role;
 import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import org.springframework.web.multipart.MultipartFile;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
+
 
 @Service
 public class UtilisateurService {
@@ -64,14 +74,15 @@ public class UtilisateurService {
     // ================= GET BY ID =================
     public Utilisateur getById(Long id) {
         return utilisateurRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Administrateur introuvable"));
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
     }
 
-    // ================= UPDATE ADMIN (CORRIGÉ) =================
+    // ================= UPDATE ADMIN =================
     public void updateAdmin(Utilisateur adminForm) {
 
     Utilisateur admin = utilisateurRepository.findById(adminForm.getId())
             .orElseThrow(() -> new RuntimeException("Admin introuvable"));
+
 
     utilisateurRepository.findByEmail(adminForm.getEmail())
             .ifPresent(existing -> {
@@ -91,6 +102,7 @@ public class UtilisateurService {
 
     utilisateurRepository.save(admin);
 }
+
 
     // ================= DELETE ADMIN =================
     public void deleteAdmin(Long id) {
@@ -155,4 +167,55 @@ public void desactiverBibliothecaire(Long id, Utilisateur adminConnecte) {
     utilisateurRepository.save(biblio);
 }
 
+
+    // ================= GET BY EMAIL =================
+    public Utilisateur getByEmail(String email) {
+        return utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+    }
+
+    // ================= UPDATE PROFIL + PHOTO =================
+    public void updateProfile(
+            String currentEmail,
+            Utilisateur form,
+            MultipartFile photoFile
+    ) throws Exception {
+
+        Utilisateur user = utilisateurRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+        // 🔥 email unique
+        utilisateurRepository.findByEmail(form.getEmail())
+                .ifPresent(existing -> {
+                    if (!existing.getId().equals(user.getId())) {
+                        throw new IllegalArgumentException("Email déjà utilisé");
+                    }
+                });
+
+        user.setNom(form.getNom());
+        user.setPrenom(form.getPrenom());
+        user.setEmail(form.getEmail());
+
+        // 📸 PHOTO
+        if (photoFile != null && !photoFile.isEmpty()) {
+
+            String extension = photoFile.getOriginalFilename()
+                    .substring(photoFile.getOriginalFilename().lastIndexOf("."));
+
+            String fileName = "profile_" + user.getId() + extension;
+
+            Path uploadDir = Paths.get("uploads/profiles");
+            Files.createDirectories(uploadDir);
+
+            Files.copy(
+                    photoFile.getInputStream(),
+                    uploadDir.resolve(fileName),
+                    StandardCopyOption.REPLACE_EXISTING
+            );
+
+            user.setPhoto(fileName);
+        }
+
+        utilisateurRepository.save(user);
+    }
 }
