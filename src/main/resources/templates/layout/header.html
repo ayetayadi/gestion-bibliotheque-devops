@@ -9,10 +9,18 @@
     </div>
 
     <div class="header-right">
-        <span class="user-info">
-            <strong th:text="${#authentication.name}"></strong>
-            (<span th:text="${#authentication.authorities[0].authority}"></span>)
-        </span>
+        <div class="user-info">
+            <span class="user-email" th:text="${#authentication.name}"></span>
+
+            <span class="role-badge"
+                  th:switch="${#authentication.authorities[0].authority}">
+                <span th:case="'ROLE_SUPER_ADMIN'">Super Admin</span>
+                <span th:case="'ROLE_ADMIN'">Admin</span>
+                <span th:case="'ROLE_BIBLIOTHECAIRE'">Bibliothécaire</span>
+                <span th:case="'ROLE_LECTEUR'">Lecteur</span>
+                <span th:case="*">Utilisateur</span>
+            </span>
+        </div>
 
         <form th:action="@{/logout}" method="post">
             <button class="logout-btn">Déconnexion</button>

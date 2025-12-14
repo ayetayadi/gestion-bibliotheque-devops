@@ -12,53 +12,73 @@ body {
 
 /* ================= HEADER ================= */
 .header {
-    height: 64px;
-    background: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 24px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
+    padding: 14px 20px;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .menu-btn {
+    font-size: 20px;
     background: none;
     border: none;
-    font-size: 22px;
     cursor: pointer;
-    color: #2563eb;
 }
 
 .app-title {
+    font-size: 20px;
     font-weight: 700;
-    font-size: 18px;
-    color: #2563eb;
+    color: #1e3a8a;
 }
 
 .header-right {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 20px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-email {
+    font-weight: 600;
+    color: #374151;
+}
+
+.role-badge {
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 999px;
+    background: #e0e7ff;
+    color: #3730a3;
 }
 
 .logout-btn {
     background: #ef4444;
-    border: none;
     color: white;
+    border: none;
     padding: 8px 14px;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 14px;
+    font-weight: 600;
 }
 
 .logout-btn:hover {
     background: #dc2626;
 }
+
 
 /* ================= SIDEBAR ================= */
 .sidebar {
