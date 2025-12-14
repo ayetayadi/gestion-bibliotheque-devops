@@ -8,8 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
 
 @Repository
-public interface UtilisateurRepository
-        extends JpaRepository<Utilisateur, Long> {
+public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> {
 
     Optional<Utilisateur> findByEmail(String email);
 }

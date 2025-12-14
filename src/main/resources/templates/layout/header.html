@@ -11,13 +11,11 @@
     <div class="header-right">
         <span class="user-info">
             <strong th:text="${#authentication.name}"></strong>
-            <span class="role"
-                  th:text="${#authentication.authorities[0].authority}">
-            </span>
+            (<span th:text="${#authentication.authorities[0].authority}"></span>)
         </span>
 
         <form th:action="@{/logout}" method="post">
-            <button class="logout-btn">⎋</button>
+            <button class="logout-btn">Déconnexion</button>
         </form>
     </div>
 </header>

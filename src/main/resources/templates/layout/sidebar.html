@@ -4,19 +4,65 @@
 
 <aside th:fragment="sidebar" id="sidebar" class="sidebar">
 
-    <nav>
-        <a th:href="@{/dashboard}">🏠 Dashboard</a>
+    <nav class="menu">
 
-        <a th:if="${#authorization.expression('hasRole(''USAGER'')')}"
-           th:href="@{/mes-prets}">📚 Mes prêts</a>
+        <!-- COMMUN -->
+        <a th:href="@{/dashboard}" class="menu-item">🏠 Accueil</a>
+        <a th:href="@{/catalogue}" class="menu-item">📚 Catalogue</a>
 
-        <a th:if="${#authorization.expression('hasRole(''BIBLIOTHECAIRE'')')}"
-           th:href="@{/gestion-prets}">🔄 Gestion des prêts</a>
+        <!-- ================= SUPER ADMIN ================= -->
+        <div th:if="${#authorization.expression('hasRole(''SUPER_ADMIN'')')}">
 
-        <a th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
-           th:href="@{/admin/utilisateurs}">👥 Utilisateurs</a>
+            <div class="menu-section">Administration globale</div>
+
+            <a th:href="@{/super-admin/bibliotheques}" class="menu-item">
+                🏛️ Bibliothèques
+            </a>
+
+            <a th:href="@{/super-admin/admins}" class="menu-item">
+                👑 Administrateurs
+            </a>
+        </div>
+
+        <!-- ================= ADMIN ================= -->
+        <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+
+            <div class="menu-section">Administration locale</div>
+
+            <a th:href="@{/admin/bibliothecaires}" class="menu-item">
+                👨‍🏫 Bibliothécaires
+            </a>
+        </div>
+
+        <!-- ================= BIBLIOTHÉCAIRE ================= -->
+        <div th:if="${#authorization.expression('hasRole(''BIBLIOTHECAIRE'')')}">
+
+            <div class="menu-section">Gestion bibliothèque</div>
+
+            <a th:href="@{/bibliothecaire/prets}" class="menu-item">
+                🔄 Prêts
+            </a>
+
+            <a th:href="@{/bibliothecaire/ressources}" class="menu-item">
+                📘 Ressources
+            </a>
+        </div>
+
+        <!-- ================= LECTEUR ================= -->
+        <div th:if="${#authorization.expression('hasRole(''LECTEUR'')')}">
+
+            <div class="menu-section">Mon espace</div>
+
+            <a th:href="@{/lecteur/mes-prets}" class="menu-item">
+                📖 Mes prêts
+            </a>
+
+            <a th:href="@{/lecteur/reservations}" class="menu-item">
+                📝 Réservations
+            </a>
+        </div>
+
     </nav>
-
 </aside>
 
 </body>
