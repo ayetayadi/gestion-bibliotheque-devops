@@ -1,21 +1,103 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-        <head>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
     <meta charset="UTF-8">
+    <title>Gestion des administrateurs | BiblioNet</title>
 
     <link rel="stylesheet" th:href="@{/css/main.css}">
-
 </head>
 <body>
 
+<!-- HEADER -->
 <div th:replace="layout/header :: header"></div>
+
+<!-- SIDEBAR -->
 <div th:replace="layout/sidebar :: sidebar"></div>
 
+<!-- CONTENT -->
 <main class="content">
-    <h2>Gestion des administrateurs</h2>
-    <p>Créer, modifier, désactiver des admins</p>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <div>
+            <h2>Gestion des administrateurs</h2>
+            <p class="text-muted">
+                Créer, modifier ou supprimer les comptes administrateurs
+            </p>
+        </div>
+
+        <a th:href="@{/super-admin/admins/add}" class="btn btn-primary">
+            ➕ Ajouter un administrateur
+        </a>
+    </div>
+
+    <!-- TABLE CARD -->
+    <div class="card">
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Rôle</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            <!-- LISTE DES ADMINS -->
+            <tr th:each="admin, stat : ${admins}">
+                <td th:text="${stat.count}"></td>
+
+                <td th:text="${admin.nom + ' ' + admin.prenom}"></td>
+
+                <td th:text="${admin.email}"></td>
+
+
+                <td>
+                    <span class="badge badge-blue"
+                          th:text="${admin.role}">
+                    </span>
+                </td>
+
+                <td>
+                    <span th:if="${admin.actif}" class="badge badge-green">Actif</span>
+                    <span th:unless="${admin.actif}" class="badge badge-red">Inactif</span>
+                </td>
+
+                <td class="actions">
+                 <a th:href="@{/super-admin/admins/edit/{id}(id=${admin.id})}"
+   class="btn btn-sm btn-warning">
+    ✏️ Modifier
+</a>
+
+<a th:href="@{/super-admin/admins/delete/{id}(id=${admin.id})}"
+   class="btn btn-sm btn-danger"
+   onclick="return confirm('Supprimer cet administrateur ?');">
+    🗑 Supprimer
+</a>
+
+                </td>
+            </tr>
+
+            <!-- CAS LISTE VIDE -->
+            <tr th:if="${#lists.isEmpty(admins)}">
+                <td colspan="7" style="text-align:center; padding:20px;">
+                    Aucun administrateur trouvé
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+
+    </div>
+
 </main>
 
+<!-- FOOTER -->
 <div th:replace="layout/footer :: footer"></div>
 
 </body>

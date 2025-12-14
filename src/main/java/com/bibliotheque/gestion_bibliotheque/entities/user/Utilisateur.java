@@ -39,4 +39,5 @@ public class Utilisateur {
 
     @Column(nullable = false)
     private LocalDateTime dateInscription = LocalDateTime.now();
+    
 }
