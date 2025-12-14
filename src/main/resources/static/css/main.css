@@ -417,3 +417,23 @@ body {
         text-align: left;
     }
 }
+
+/* ================= RESSOURCES ================= */
+
+.resource-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+}
+
+.resource-info h4 {
+    margin: 0 0 4px;
+    font-size: 16px;
+}
+
+.resource-actions {
+    display: flex;
+    gap: 10px;
+}
+

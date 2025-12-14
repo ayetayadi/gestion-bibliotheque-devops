@@ -34,7 +34,12 @@
             <a th:href="@{/admin/bibliothecaires}" class="menu-item">
                 👨‍🏫 Bibliothécaires
             </a>
+                 <a th:href="@{/bibliothecaire/ressources}" class="menu-item">
+    📦 Ressources
+</a>
         </div>
+        
+        
 
         <!-- ================= BIBLIOTHÉCAIRE ================= -->
         <div th:if="${#authorization.expression('hasRole(''BIBLIOTHECAIRE'')')}">
@@ -45,9 +50,10 @@
                 🔄 Prêts
             </a>
 
-            <a th:href="@{/bibliothecaire/ressources}" class="menu-item">
-                📘 Ressources
-            </a>
+         <a th:href="@{/bibliothecaire/ressources}" class="menu-item">
+    📦 Ressources
+</a>
+
         </div>
 
         <!-- ================= LECTEUR ================= -->

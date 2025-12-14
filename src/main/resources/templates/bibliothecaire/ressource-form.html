@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ressource | BiblioNet</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div th:replace="layout/header :: header"></div>
+
+<!-- SIDEBAR -->
+<div th:replace="layout/sidebar :: sidebar"></div>
+
+<main class="content">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <div>
+            <h2>📘 Ressource</h2>
+            <p class="text-muted">
+                Ajouter ou modifier une ressource
+            </p>
+        </div>
+    </div>
+
+    <!-- FORM CARD -->
+    <div class="card form-card">
+
+        <form method="post" enctype="multipart/form-data">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Titre</label>
+                    <input type="text" placeholder="Titre du livre" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Auteur</label>
+                    <input type="text" placeholder="Nom de l’auteur" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Catégorie</label>
+                    <select required>
+                        <option>Littérature</option>
+                        <option>Sciences</option>
+                        <option>Multimédia</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Statut</label>
+                    <select>
+                        <option>Disponible</option>
+                        <option>Réservé</option>
+                        <option>Indisponible</option>
+                    </select>
+                </div>
+
+                <!-- UPLOAD -->
+                <div class="form-group">
+                    <label>Couverture</label>
+                    <input type="file" accept="image/*">
+                    <small class="form-hint">
+                        JPG / PNG – max 5 Mo
+                    </small>
+                </div>
+
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="form-actions">
+                <a th:href="@{/bibliothecaire/ressources}"
+                   class="btn btn-secondary">
+                    Annuler
+                </a>
+
+                <button type="submit" class="btn btn-primary">
+                    Enregistrer
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</main>
+
+<!-- FOOTER -->
+<div th:replace="layout/footer :: footer"></div>
+
+</body>
+</html>

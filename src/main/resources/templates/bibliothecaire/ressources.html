@@ -1,21 +1,112 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-        <head>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
     <meta charset="UTF-8">
-
+    <title>Ressources | BiblioNet</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
-
 </head>
+
 <body>
 
+<!-- HEADER -->
 <div th:replace="layout/header :: header"></div>
+
+<!-- SIDEBAR -->
 <div th:replace="layout/sidebar :: sidebar"></div>
 
+<!-- CONTENT -->
 <main class="content">
-    <h2>Gestion des ressources</h2>
-    <p>Livres, documents, multimédia</p>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <div>
+            <h2>📦 Ressources</h2>
+            <p class="text-muted">
+                Catalogue local des ressources de la bibliothèque
+            </p>
+        </div>
+
+        <a th:href="@{/admin/ressources/new}" class="btn btn-primary">
+            ➕ Ajouter une ressource
+        </a>
+    </div>
+
+    <!-- SEARCH & FILTER -->
+    <div class="card" style="margin-bottom:20px;">
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label>Recherche</label>
+                <input type="text"
+                       placeholder="Rechercher par titre ou auteur…">
+            </div>
+
+            <div class="form-group">
+                <label>Catégorie</label>
+                <select>
+                    <option>Toutes les catégories</option>
+                    <option>Littérature</option>
+                    <option>Sciences</option>
+                    <option>Multimédia</option>
+                </select>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- LISTE DES RESSOURCES -->
+    <div class="card">
+
+        <!-- RESSOURCE ITEM -->
+        <div class="resource-item">
+
+            <div class="resource-info">
+                <h4>Le Petit Prince</h4>
+                <p class="text-muted">
+                    Auteur : Antoine de Saint-Exupéry
+                </p>
+                <span class="badge badge-green">Disponible</span>
+            </div>
+
+            <div class="resource-actions">
+                <a href="#" class="btn btn-sm btn-warning">✏️ Modifier</a>
+                <a href="#" class="btn btn-sm btn-danger">🚫 Désactiver</a>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="resource-item">
+
+            <div class="resource-info">
+                <h4>Sapiens</h4>
+                <p class="text-muted">
+                    Auteur : Yuval Noah Harari
+                </p>
+                <span class="badge badge-blue">Réservé</span>
+            </div>
+
+         
+            
+            
+            
+            <a th:href="@{/bibliothecaire/ressources/edit/1}"
+   class="btn btn-sm btn-warning">
+   ✏️ Modifier
+</a>
+
+<a th:href="@{/bibliothecaire/ressources/delete/1}"
+   class="btn btn-sm btn-danger">
+   🚫 Désactiver
+</a>
+            
+        </div>
+
+    </div>
+
 </main>
 
+<!-- FOOTER -->
 <div th:replace="layout/footer :: footer"></div>
 
 </body>
