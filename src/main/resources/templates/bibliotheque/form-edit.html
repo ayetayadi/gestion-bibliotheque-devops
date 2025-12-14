@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier bibliothèque | BiblioNet</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+
+<body>
+
+<div th:replace="layout/header :: header"></div>
+<div th:replace="layout/sidebar :: sidebar"></div>
+
+<main class="content">
+
+    <div class="page-header">
+        <div>
+            <h2>Modifier bibliothèque</h2>
+            <p class="text-muted">Mettre à jour les informations</p>
+        </div>
+    </div>
+
+    <div class="card form-card">
+
+       <form th:action="@{/super-admin/bibliotheques/edit}"
+      th:object="${bibliotheque}"
+      method="post">
+
+    <input type="hidden" th:field="*{id}">
+
+    <div class="form-grid">
+
+        <div class="form-group">
+            <label>Nom</label>
+            <input type="text" th:field="*{nom}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Code</label>
+            <input type="text" th:field="*{code}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Rue</label>
+            <input type="text" th:field="*{adresse.rue}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Ville</label>
+            <input type="text" th:field="*{adresse.ville}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Code postal</label>
+            <input type="text" th:field="*{adresse.codePostal}" required>
+        </div>
+
+        <!-- MAP -->
+        <div class="form-group" style="grid-column: span 2;">
+            <label>Localisation</label>
+            <div id="map" style="height: 350px;"></div>
+        </div>
+
+        <input type="hidden" th:field="*{adresse.latitude}" id="latitude">
+        <input type="hidden" th:field="*{adresse.longitude}" id="longitude">
+
+    </div>
+
+    <div class="form-actions">
+        <button class="btn btn-primary">Mettre à jour</button>
+    </div>
+</form>
+
+
+    </div>
+
+</main>
+
+<div th:replace="layout/footer :: footer"></div>
+
+<script th:inline="javascript">
+    let lat = [[${bibliotheque.adresse.latitude != null ?
+                bibliotheque.adresse.latitude : 36.8065}]];
+    let lng = [[${bibliotheque.adresse.longitude != null ?
+                bibliotheque.adresse.longitude : 10.1815}]];
+
+    const map = L.map('map').setView([lat, lng], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    let marker = L.marker([lat, lng]).addTo(map);
+
+    function update(lat, lng) {
+        document.getElementById("latitude").value = lat;
+        document.getElementById("longitude").value = lng;
+    }
+
+    update(lat, lng);
+
+    map.on('click', e => {
+        marker.setLatLng(e.latlng);
+        update(e.latlng.lat, e.latlng.lng);
+    });
+</script>
+
+</body>
+</html>

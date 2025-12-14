@@ -14,99 +14,88 @@
 <!-- SIDEBAR -->
 <div th:replace="layout/sidebar :: sidebar"></div>
 
-<!-- CONTENT -->
 <main class="content">
 
-    <!-- PAGE HEADER -->
+    <!-- TITRE + BOUTON -->
     <div class="page-header">
         <div>
-            <h2>📦 Ressources</h2>
-            <p class="text-muted">
-                Catalogue local des ressources de la bibliothèque
-            </p>
+            <h2>📚 Liste des ressources</h2>
+            <p class="text-muted">Catalogue de votre bibliothèque</p>
         </div>
 
-        <a th:href="@{/admin/ressources/new}" class="btn btn-primary">
+        <a class="btn btn-primary" th:href="@{/bibliothecaire/ressources/new}">
             ➕ Ajouter une ressource
         </a>
     </div>
 
-    <!-- SEARCH & FILTER -->
-    <div class="card" style="margin-bottom:20px;">
-        <div class="form-grid">
+    <!-- LISTE -->
+    <div class="resource-list">
 
-            <div class="form-group">
-                <label>Recherche</label>
-                <input type="text"
-                       placeholder="Rechercher par titre ou auteur…">
+        <!-- CARD -->
+        <div class="resource-card" th:each="r : ${ressources}">
+
+            <!-- IMAGE -->
+            <div class="resource-img">
+                <img th:if="${r.cheminCouverture != null}"
+                     th:src="@{'/uploads/covers/' + ${r.cheminCouverture}}"
+                     alt="Couverture">
+
+                <div th:if="${r.cheminCouverture == null}" class="no-cover">
+                    📘
+                </div>
             </div>
 
-            <div class="form-group">
-                <label>Catégorie</label>
-                <select>
-                    <option>Toutes les catégories</option>
-                    <option>Littérature</option>
-                    <option>Sciences</option>
-                    <option>Multimédia</option>
-                </select>
-            </div>
+            <!-- INFO -->
+            <div class="resource-content">
+<div th:if="${param.deleted}" class="alert alert-success">
+    Ressource supprimée avec succès ✔
+</div>
 
-        </div>
-    </div>
+                <div class="resource-header">
+                    <h3 th:text="${r.titre}"></h3>
+                    <span class="badge badge-type" th:text="${r.typeRessource}"></span>
+                </div>
 
-    <!-- LISTE DES RESSOURCES -->
-    <div class="card">
+                <p class="author" th:text="'Auteur : ' + ${r.auteur}"></p>
 
-        <!-- RESSOURCE ITEM -->
-        <div class="resource-item">
-
-            <div class="resource-info">
-                <h4>Le Petit Prince</h4>
-                <p class="text-muted">
-                    Auteur : Antoine de Saint-Exupéry
+                <p>
+                    <strong>Catégorie :</strong>
+                    <span th:text="${r.categorie}"></span>
                 </p>
-                <span class="badge badge-green">Disponible</span>
-            </div>
 
-            <div class="resource-actions">
-                <a href="#" class="btn btn-sm btn-warning">✏️ Modifier</a>
-                <a href="#" class="btn btn-sm btn-danger">🚫 Désactiver</a>
-            </div>
-        </div>
-
-        <hr>
-
-        <div class="resource-item">
-
-            <div class="resource-info">
-                <h4>Sapiens</h4>
-                <p class="text-muted">
-                    Auteur : Yuval Noah Harari
+                <p>
+                    <strong>Bibliothèque :</strong>
+                    <span th:text="${r.bibliotheque.nom}"></span>
                 </p>
-                <span class="badge badge-blue">Réservé</span>
-            </div>
 
-         
-            
-            
-            
-            <a th:href="@{/bibliothecaire/ressources/edit/1}"
-   class="btn btn-sm btn-warning">
-   ✏️ Modifier
+                <!-- STOCK -->
+   <div class="stock-box" th:with="s=${stocks[r.id]}">
+    Disponible : <span th:text="${s.quantiteDisponible}"></span>
+    Total : <span th:text="${s.quantiteTotale}"></span>
+</div>
+
+
+                <!-- ACTIONS (pour plus tard) -->
+                <div class="resource-actions">
+                   <a th:href="@{'/bibliothecaire/ressources/edit/' + ${r.id}}"
+   class="btn btn-secondary">
+   Modifier
 </a>
 
-<a th:href="@{/bibliothecaire/ressources/delete/1}"
-   class="btn btn-sm btn-danger">
-   🚫 Désactiver
+<a th:href="@{'/bibliothecaire/ressources/delete/' + ${r.id}}"
+   class="btn btn-danger"
+   onclick="return confirm('Voulez-vous vraiment supprimer cette ressource ?');">
+    🗑 Supprimer
 </a>
-            
-        </div>
+                </div>
 
+            </div>
+
+        </div>
     </div>
 
 </main>
 
-<!-- FOOTER -->
 <div th:replace="layout/footer :: footer"></div>
 
 </body>

@@ -41,20 +41,21 @@
         
         
 
-        <!-- ================= BIBLIOTHÉCAIRE ================= -->
-        <div th:if="${#authorization.expression('hasRole(''BIBLIOTHECAIRE'')')}">
+    <!-- ================= BIBLIOTHÉCAIRE ================= -->
+<div th:if="${#authorization.expression('hasRole(''BIBLIOTHECAIRE'')')}">
 
-            <div class="menu-section">Gestion bibliothèque</div>
+    <div class="menu-section">Gestion bibliothèque</div>
 
-            <a th:href="@{/bibliothecaire/prets}" class="menu-item">
-                🔄 Prêts
-            </a>
+    <a th:href="@{/bibliothecaire/prets}" class="menu-item">
+        🔄 Prêts
+    </a>
 
-         <a th:href="@{/bibliothecaire/ressources}" class="menu-item">
-    📦 Ressources
-</a>
+    <a th:href="@{/bibliothecaire/ressources}" class="menu-item">
+        📦 Ressources
+    </a>
 
-        </div>
+</div>
+
 
         <!-- ================= LECTEUR ================= -->
         <div th:if="${#authorization.expression('hasRole(''LECTEUR'')')}">

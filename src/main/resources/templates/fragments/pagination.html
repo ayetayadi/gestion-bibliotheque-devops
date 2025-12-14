@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="pagination(page, baseUrl)" class="pagination">
+
+    <!-- Bouton précédent -->
+    <a th:if="${page.hasPrevious()}"
+       th:href="@{${baseUrl}(page=${page.number - 1})}">
+        ◀ Précédent
+    </a>
+
+    <span>
+        Page <b th:text="${page.number + 1}"></b>
+        / <b th:text="${page.totalPages}"></b>
+    </span>
+
+    <!-- Bouton suivant -->
+    <a th:if="${page.hasNext()}"
+       th:href="@{${baseUrl}(page=${page.number + 1})}">
+        Suivant ▶
+    </a>
+
+</div>
+
+</body>
+</html>

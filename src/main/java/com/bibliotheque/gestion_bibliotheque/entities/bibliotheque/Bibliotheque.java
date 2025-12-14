@@ -1,0 +1,47 @@
+package com.bibliotheque.gestion_bibliotheque.entities.bibliotheque;
+
+import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.List;
+
+@Entity
+@Table(name = "bibliotheque")
+@Getter
+@Setter
+@NoArgsConstructor
+public class Bibliotheque {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String code;
+
+    @Column(nullable = false)
+    private String nom;
+
+    private String telephone;
+
+    private String emailContact;
+
+    private boolean actif = true;
+
+    /* ================= RELATIONS ================= */
+
+    // 1 Bibliothèque → 1 Adresse
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "adresse_id", nullable = false)
+    private Adresse adresse;
+
+    // 1 Bibliothèque → * Bibliothécaires
+    @OneToMany(mappedBy = "bibliotheque")
+    private List<Utilisateur> utilisateurs;
+    @OneToMany(mappedBy = "bibliotheque", cascade = CascadeType.ALL)
+    private List<StockBibliotheque> stock;
+
+}

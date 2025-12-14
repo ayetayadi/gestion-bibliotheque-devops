@@ -16,9 +16,13 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
+            // 🔴 CSRF désactivé (OK pour projet académique)
             .csrf(csrf -> csrf.disable())
 
+            // 🔐 AUTORISATIONS
             .authorizeHttpRequests(auth -> auth
+
+                // 🌍 PUBLIC
                 .requestMatchers(
                     "/",
                     "/login",
@@ -27,11 +31,26 @@ public class SecurityConfig {
                     "/js/**",
                     "/images/**"
                 ).permitAll()
+
+                // 👨‍🏫 BIBLIOTHÉCAIRE : gestion ressources & prêts
+                .requestMatchers("/bibliothecaire/**")
+                    .hasRole("BIBLIOTHECAIRE")
+
+                // 🧑‍💼 ADMIN
+                .requestMatchers("/admin/**")
+                    .hasRole("ADMIN")
+
+                // 👑 SUPER ADMIN
+                .requestMatchers("/super-admin/**")
+                    .hasRole("SUPER_ADMIN")
+
+                // 🔐 TOUT LE RESTE
                 .anyRequest().authenticated()
             )
 
+            // 🔑 LOGIN FORM
             .formLogin(form -> form
-                .loginPage("/login")  
+                .loginPage("/login")
                 .loginProcessingUrl("/login")
                 .usernameParameter("email")
                 .passwordParameter("password")
@@ -40,9 +59,11 @@ public class SecurityConfig {
                 .permitAll()
             )
 
+            // 🚪 LOGOUT
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout=true")
+                .permitAll()
             );
 
         return http.build();
