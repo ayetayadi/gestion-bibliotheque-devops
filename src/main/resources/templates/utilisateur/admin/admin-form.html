@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ajouter un administrateur | BiblioNet</title>
+
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+
+<div th:replace="layout/header :: header"></div>
+<div th:replace="layout/sidebar :: sidebar"></div>
+
+<main class="content">
+
+    <div th:if="${success}" class="alert alert-success auto-hide">
+        <span th:text="${success}"></span>
+    </div>
+
+    <div th:if="${error}" class="alert alert-error auto-hide">
+        <span th:text="${error}"></span>
+    </div>
+
+    <div class="page-header">
+        <div>
+            <h2>Ajouter un administrateur</h2>
+            <p class="text-muted">Création d’un compte administrateur</p>
+        </div>
+    </div>
+
+    <div class="card form-card">
+
+        <form th:action="@{/super-admin/admins/add}" th:object="${admin}" method="post">
+
+            <div class="form-group">
+                <label>Bibliothèque</label>
+                <select th:field="*{bibliotheque.id}" required>
+                    <option value="">-- Sélectionner --</option>
+                    <option th:each="b : ${bibliotheques}"
+                            th:value="${b.id}"
+                            th:text="${b.nom + ' - ' + b.adresse.ville}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Nom</label>
+                <input type="text" th:field="*{nom}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Prénom</label>
+                <input type="text" th:field="*{prenom}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" th:field="*{email}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Mot de passe</label>
+                <input type="password" th:field="*{motDePasse}" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+
+        </form>
+
+    </div>
+
+</main>
+
+<script>
+    setTimeout(() => {
+        document.querySelectorAll('.auto-hide').forEach(el => el.remove());
+    }, 3500);
+</script>
+
+<div th:replace="layout/footer :: footer"></div>
+
+</body>
+</html>

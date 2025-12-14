@@ -7,6 +7,8 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.Bibliotheque;
+
 @Entity
 @Table(name = "utilisateur")
 @Getter
@@ -39,6 +41,11 @@ public class Utilisateur {
 
     @Column(nullable = false)
     private LocalDateTime dateInscription = LocalDateTime.now();
+    
+    @ManyToOne
+    @JoinColumn(name = "bibliotheque_id")
+    private Bibliotheque bibliotheque;
+
     @Column(name = "photo")
     private String photo; // ex: "profile_12.jpg"
 
