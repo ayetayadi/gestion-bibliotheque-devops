@@ -2,6 +2,8 @@ package com.bibliotheque.gestion_bibliotheque.metier;
 
 import com.bibliotheque.gestion_bibliotheque.dao.BibliothequeRepository;
 import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.Bibliotheque;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,15 +14,17 @@ public class BibliothequeService {
     private final BibliothequeRepository bibliothequeRepository;
     private final UtilisateurService utilisateurService;
 
+    public BibliothequeService(BibliothequeRepository bibliothequeRepository,
+                               UtilisateurService utilisateurService) {
+        this.bibliothequeRepository = bibliothequeRepository;
+        this.utilisateurService = utilisateurService;
+    }
+
     // ================= CREATE =================
     public Bibliotheque creerBibliotheque(Bibliotheque bibliotheque) {
-
         if (bibliothequeRepository.existsByCode(bibliotheque.getCode())) {
-            throw new IllegalArgumentException(
-                "Le code de la bibliothèque existe déjà"
-            );
+            throw new IllegalArgumentException("Le code de la bibliothèque existe déjà");
         }
-
         bibliotheque.setActif(true);
         return bibliothequeRepository.save(bibliotheque);
     }
@@ -30,32 +34,20 @@ public class BibliothequeService {
         return bibliothequeRepository.findAll(pageable);
     }
 
-    // ================= READ SIMPLE (utilisé par SuperAdmin) =================
+    // ================= READ SIMPLE =================
     public List<Bibliotheque> getAll() {
         return bibliothequeRepository.findAll();
     }
 
-    // Alias (si tu veux garder listAll)
     public List<Bibliotheque> listAll() {
         return bibliothequeRepository.findAll();
     }
 
     // ================= READ BY ID =================
-
     public Bibliotheque getById(Long id) {
         return bibliothequeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Bibliothèque introuvable"));
     }
-
-    // ================= UPDATE =================
-    public Bibliotheque update(Bibliotheque updated) {
-
-        Bibliotheque existing = getById(updated.getId());
-
-        existing.setNom(updated.getNom());
-        existing.setCode(updated.getCode());
-        existing.setAdresse(updated.getAdresse());
-
 
     // ================= UPDATE =================
     public void updateBibliotheque(Bibliotheque form) {
@@ -65,7 +57,6 @@ public class BibliothequeService {
         biblio.setAdresse(form.getAdresse());
         bibliothequeRepository.save(biblio);
     }
-
 
     // ================= DESACTIVER =================
     public void desactiverBibliotheque(Long id) {
@@ -77,11 +68,9 @@ public class BibliothequeService {
 
     // ================= ACTIVER =================
     public void activerBibliotheque(Long id) {
-
-    Bibliotheque biblio = getById(id);
-    biblio.setActif(true);
-    bibliothequeRepository.save(biblio);
-
-    utilisateurService.activerUtilisateursDeBibliotheque(biblio);
-}
+        Bibliotheque biblio = getById(id);
+        biblio.setActif(true);
+        bibliothequeRepository.save(biblio);
+        utilisateurService.activerUtilisateursDeBibliotheque(biblio);
+    }
 }
