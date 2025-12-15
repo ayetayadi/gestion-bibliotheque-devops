@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <title>Détails bibliothèque | BiblioNet</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
-
     <!-- Leaflet -->
-    <link rel="stylesheet"
-          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #map { height: 350px; border-radius: 12px; margin-top: 20px; }
+    </style>
 </head>
 <body>
 
@@ -23,8 +24,7 @@
             <p class="text-muted">Détails de la bibliothèque</p>
         </div>
 
-        <a th:href="@{/super-admin/bibliotheques}"
-           class="btn btn-secondary">Retour</a>
+        <a th:href="@{/super-admin/bibliotheques}" class="btn btn-secondary">Retour</a>
     </div>
 
     <div class="card">
@@ -32,20 +32,27 @@
         <p>
             <strong>Adresse :</strong>
             <span th:text="${bibliotheque.adresse.rue}"></span>,
-            <span th:text="${bibliotheque.adresse.ville}"></span>
+            <span th:text="${bibliotheque.adresse.ville}"></span>,
+            <span th:text="${bibliotheque.adresse.codePostal}"></span>
+        </p>
+
+        <p>
+            <strong>Téléphone :</strong>
+            <span th:text="${bibliotheque.telephone ?: 'Non renseigné'}"></span>
+        </p>
+
+        <p>
+            <strong>Email :</strong>
+            <span th:text="${bibliotheque.emailContact ?: 'Non renseigné'}"></span>
         </p>
 
         <p>
             <strong>Statut :</strong>
             <span th:if="${bibliotheque.actif}" class="badge badge-green">Active</span>
-            <span th:unless="${bibliotheque.actif}" class="badge badge-red">
-                Inactive — accès suspendu
-            </span>
+            <span th:unless="${bibliotheque.actif}" class="badge badge-red">Inactive — accès suspendu</span>
         </p>
 
-        <div id="map"
-             style="height: 350px; border-radius: 12px; margin-top: 20px;">
-        </div>
+        <div id="map"></div>
     </div>
 
 </main>
@@ -53,16 +60,26 @@
 <div th:replace="layout/footer :: footer"></div>
 
 <script th:inline="javascript">
-    const lat = [[${bibliotheque.adresse.latitude}]];
-    const lng = [[${bibliotheque.adresse.longitude}]];
+    // Récupération des coordonnées depuis Spring
+    const lat = [[${bibliotheque.adresse.latitude != null ? bibliotheque.adresse.latitude : 36.8065}]];
+    const lng = [[${bibliotheque.adresse.longitude != null ? bibliotheque.adresse.longitude : 10.1815}]];
 
+    // Initialisation de la carte
     const map = L.map('map').setView([lat, lng], 13);
 
+    // Tiles OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    L.marker([lat, lng]).addTo(map);
+    // Marker pointant sur la bibliothèque
+    const marker = L.marker([lat, lng]).addTo(map);
+
+    // Popup avec nom et adresse
+    marker.bindPopup("<strong>" + [[${bibliotheque.nom}]] + "</strong><br>" +
+                     [[${bibliotheque.adresse.rue}]] + ", " +
+                     [[${bibliotheque.adresse.ville}]] + ", " +
+                     [[${bibliotheque.adresse.codePostal}]]).openPopup();
 </script>
 
 </body>
