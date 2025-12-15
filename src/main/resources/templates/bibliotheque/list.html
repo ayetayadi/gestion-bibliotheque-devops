@@ -40,35 +40,39 @@
         <table class="table">
 
             <thead>
-            <tr>
-                <th>#</th>
-                <th>Nom</th>
-                <th>Code</th>
-                <th>Ville</th>
-                <th>Statut</th>
-                <th>Actions</th>
-            </tr>
+                <tr>
+                    <th>#</th>
+                    <th>Nom</th>
+                    <th>Code</th>
+                    <th>Ville</th>
+                    <th>Téléphone</th>
+                    <th>Email</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
             </thead>
 
             <tbody>
 
-            <tr th:each="b, stat : ${bibliotheques}">
-                <td th:text="${stat.count}"></td>
-                <td th:text="${b.nom}"></td>
-                <td th:text="${b.code}"></td>
-                <td th:text="${b.adresse.ville}"></td>
+                <tr th:each="b, stat : ${bibliotheques}">
+                    <td th:text="${stat.count}"></td>
+                    <td th:text="${b.nom}"></td>
+                    <td th:text="${b.code}"></td>
+                    <td th:text="${b.adresse.ville}"></td>
+                    <td th:text="${b.telephone ?: '-'}"></td>
+                    <td th:text="${b.emailContact ?: '-'}"></td>
 
-                <td>
-                    <span th:if="${b.actif}" class="badge badge-green">Active</span>
-                    <span th:unless="${b.actif}" class="badge badge-red">Inactive</span>
+                    <td>
+                        <span th:if="${b.actif}" class="badge badge-green">Active</span>
+                        <span th:unless="${b.actif}" class="badge badge-red">Inactive</span>
 
-                    <div th:unless="${b.actif}"
-                         style="font-size:12px;color:#b91c1c;margin-top:4px;">
-                        ⚠ Accès suspendu pour les admins et bibliothécaires
-                    </div>
-                </td>
+                        <div th:unless="${b.actif}"
+                             style="font-size:12px;color:#b91c1c;margin-top:4px;">
+                            ⚠ Accès suspendu pour les admins et bibliothécaires
+                        </div>
+                    </td>
 
-                <td class="actions">
+                       <td class="actions">
 
                     <a th:href="@{/super-admin/bibliotheques/{id}(id=${b.id})}"
                        class="btn btn-sm btn-info">👁 Voir</a>
@@ -91,13 +95,13 @@
                     </a>
 
                 </td>
-            </tr>
+                </tr>
 
-            <tr th:if="${#lists.isEmpty(bibliotheques)}">
-                <td colspan="6" style="text-align:center;padding:20px;">
-                    Aucune bibliothèque trouvée
-                </td>
-            </tr>
+                <tr th:if="${#lists.isEmpty(bibliotheques)}">
+                    <td colspan="8" style="text-align:center;padding:20px;">
+                        Aucune bibliothèque trouvée
+                    </td>
+                </tr>
 
             </tbody>
         </table>
