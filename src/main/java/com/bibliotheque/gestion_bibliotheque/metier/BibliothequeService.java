@@ -52,13 +52,13 @@ public class BibliothequeService {
     // ================= UPDATE =================
     public void updateBibliotheque(Bibliotheque form) {
         Bibliotheque biblio = getById(form.getId());
-            biblio.setNom(form.getNom());
-    biblio.setCode(form.getCode());
-    biblio.setTelephone(form.getTelephone());
-    biblio.setEmailContact(form.getEmailContact());
-    biblio.setAdresse(form.getAdresse());
+        biblio.setNom(form.getNom());
+        biblio.setCode(form.getCode());
+        biblio.setTelephone(form.getTelephone());
+        // biblio.setEmail(form.getEmail()); // supprimé car plus de champ email
+        biblio.setAdresse(form.getAdresse());
 
-    bibliothequeRepository.save(biblio);
+        bibliothequeRepository.save(biblio);
     }
 
     // ================= DESACTIVER =================

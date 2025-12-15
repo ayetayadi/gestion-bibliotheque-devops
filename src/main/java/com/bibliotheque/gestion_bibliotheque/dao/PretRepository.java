@@ -9,18 +9,18 @@ import org.springframework.data.repository.query.Param;
 import com.bibliotheque.gestion_bibliotheque.entities.pret.Pret;
 import com.bibliotheque.gestion_bibliotheque.entities.pret.StatutPret;
 import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.Bibliotheque;
-import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;  // ⭐ IMPORT MANQUANT
+import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
 
 public interface PretRepository extends JpaRepository<Pret, Long> {
 
-    // 📌 Tous les prêts / réservations d'un lecteur
+    // 📌 Tous les prêts d’un lecteur
     List<Pret> findByLecteur(Utilisateur lecteur);
+
 
     // 📌 Pour bibliothécaire : prêts à gérer
     @Query("""
-        SELECT p
-        FROM Pret p
-        WHERE p.bibliotheque = :bibliotheque
+        SELECT p FROM Pret p
+        WHERE p.stockBibliotheque.bibliotheque = :bibliotheque
           AND p.statut IN :statuts
     """)
     List<Pret> findPretsByBibliothequeAndStatuts(

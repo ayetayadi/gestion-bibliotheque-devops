@@ -23,46 +23,15 @@
     </div>
 
     <div class="card form-card">
-        <form th:action="@{/super-admin/bibliotheques}" th:object="${bibliotheque}" method="post">
-
+        <form th:action="@{/super-admin/bibliotheques/add}" th:object="${bibliotheque}" method="post">
             <div class="form-grid">
+                <div class="form-group"><label>Nom</label><input type="text" th:field="*{nom}" required></div>
+                <div class="form-group"><label>Code</label><input type="text" th:field="*{code}" required></div>
+                <div class="form-group"><label>Rue</label><input type="text" th:field="*{adresse.rue}" id="rue" required></div>
+                <div class="form-group"><label>Ville</label><input type="text" th:field="*{adresse.ville}" id="ville" required></div>
+                <div class="form-group"><label>Code postal</label><input type="text" th:field="*{adresse.codePostal}" id="codePostal" required></div>
+                <div class="form-group"><label>Téléphone</label><input type="text" th:field="*{telephone}" placeholder="+216 12 345 678"></div>
 
-                <div class="form-group">
-                    <label>Nom</label>
-                    <input type="text" th:field="*{nom}" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Code</label>
-                    <input type="text" th:field="*{code}" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Rue</label>
-                    <input type="text" th:field="*{adresse.rue}" id="rue" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Ville</label>
-                    <input type="text" th:field="*{adresse.ville}" id="ville" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Code postal</label>
-                    <input type="text" th:field="*{adresse.codePostal}" id="codePostal" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Téléphone</label>
-                    <input type="text" th:field="*{telephone}" placeholder="+216 12 345 678">
-                </div>
-
-                <div class="form-group">
-                    <label>Email de contact</label>
-                    <input type="email" th:field="*{emailContact}" placeholder="contact@bibliotheque.tn">
-                </div>
-
-                <!-- MAP -->
                 <div class="form-group" style="grid-column: span 2;">
                     <label>Localisation sur la carte</label>
                     <div id="map"></div>
@@ -70,12 +39,9 @@
 
                 <input type="hidden" th:field="*{adresse.latitude}" id="latitude">
                 <input type="hidden" th:field="*{adresse.longitude}" id="longitude">
-
             </div>
 
-            <div class="form-actions">
-                <button class="btn btn-primary">Enregistrer</button>
-            </div>
+            <div class="form-actions"><button class="btn btn-primary">Enregistrer</button></div>
         </form>
     </div>
 </main>
@@ -90,18 +56,11 @@
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     let marker = L.marker([lat, lng], {draggable:true}).addTo(map);
 
-    function updateLatLng(lat, lng) {
-        document.getElementById("latitude").value = lat;
-        document.getElementById("longitude").value = lng;
-    }
+    function updateLatLng(lat, lng) { document.getElementById("latitude").value = lat; document.getElementById("longitude").value = lng; }
     updateLatLng(lat, lng);
 
-    // Click sur la carte → reverse geocoding
     map.on('click', e => {
-        const latlng = e.latlng;
-        marker.setLatLng(latlng);
-        updateLatLng(latlng.lat, latlng.lng);
-
+        const latlng = e.latlng; marker.setLatLng(latlng); updateLatLng(latlng.lat, latlng.lng);
         fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latlng.lat}&lon=${latlng.lng}`)
             .then(resp => resp.json())
             .then(data => {
@@ -113,7 +72,6 @@
             }).catch(err => console.log(err));
     });
 
-    // Champs adresse → géocode pour marker
     function geocodeAddress() {
         const rue = document.getElementById("rue").value;
         const ville = document.getElementById("ville").value;
@@ -123,9 +81,9 @@
             .then(resp => resp.json())
             .then(data => {
                 if(data.length>0){
-                    const latlng = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+                    const latlng=[parseFloat(data[0].lat), parseFloat(data[0].lon)];
                     marker.setLatLng(latlng);
-                    map.setView(latlng, 13);
+                    map.setView(latlng,13);
                     updateLatLng(latlng[0], latlng[1]);
                 }
             }).catch(err => console.log(err));
@@ -134,7 +92,6 @@
     document.getElementById("rue").addEventListener("change", geocodeAddress);
     document.getElementById("ville").addEventListener("change", geocodeAddress);
     document.getElementById("codePostal").addEventListener("change", geocodeAddress);
-
 </script>
 </body>
 </html>

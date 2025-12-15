@@ -27,7 +27,7 @@ public class Bibliotheque {
 
     private String telephone;
 
-    private String emailContact;
+   
 
     private boolean actif = true;
 
@@ -38,10 +38,11 @@ public class Bibliotheque {
     @JoinColumn(name = "adresse_id", nullable = false)
     private Adresse adresse;
 
-    // 1 Bibliothèque → * Bibliothécaires
+    // 1 Bibliothèque → * Utilisateurs
     @OneToMany(mappedBy = "bibliotheque")
     private List<Utilisateur> utilisateurs;
+
+    // 1 Bibliothèque → * Stocks
     @OneToMany(mappedBy = "bibliotheque", cascade = CascadeType.ALL)
     private List<StockBibliotheque> stock;
-
 }

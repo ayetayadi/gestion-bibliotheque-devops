@@ -29,7 +29,7 @@ public class LecteurController {
     private final PretRepository pretRepository;
     private final RessourceService ressourceService;
 
-    // 1️⃣ RÉSERVER UNE RESSOURCE
+    // 1️⃣ Réserver une ressource
     @PostMapping("/prets/reserver/{id}")
     public String reserver(@PathVariable Long id,
                            @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -43,7 +43,9 @@ public class LecteurController {
             Ressource res = ressourceService.getById(id);
             StockBibliotheque stock = ressourceService.getStock(res);
 
-            pretWorkflowService.reserverRessource(lecteur, res, stock.getBibliotheque(), stock);
+            // ✅ Appel corrigé : uniquement 3 arguments
+            pretWorkflowService.reserverRessource(lecteur, res, stock);
+
             redirectAttrs.addFlashAttribute("success", "Réservation effectuée !");
         } catch (Exception e) {
             redirectAttrs.addFlashAttribute("error", e.getMessage());
@@ -52,7 +54,7 @@ public class LecteurController {
         return "redirect:/catalogue";
     }
 
-    // 2️⃣ AFFICHER MES PRÊTS (exclure les réservations annulées)
+    // 2️⃣ Afficher mes prêts (exclure les réservations annulées)
     @GetMapping("/prets")
     public String mesPrets(@AuthenticationPrincipal UserDetailsImpl userDetails,
                            Model model) {
@@ -71,7 +73,7 @@ public class LecteurController {
         return "lecteur/mes-prets";
     }
 
-    // 3️⃣ ANNULER UNE RÉSERVATION
+    // 3️⃣ Annuler une réservation
     @PostMapping("/prets/annuler/{id}")
     public String annulerReservation(@PathVariable Long id,
                                      @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -84,6 +86,26 @@ public class LecteurController {
         try {
             pretWorkflowService.annulerReservation(id, lecteur);
             redirectAttrs.addFlashAttribute("success", "Réservation annulée.");
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/lecteur/prets";
+    }
+
+    // 4️⃣ Retourner une ressource (mettre à jour date de retour)
+    @PostMapping("/prets/retourner/{id}")
+    public String retournerPret(@PathVariable Long id,
+                                @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                RedirectAttributes redirectAttrs) {
+
+        if (userDetails == null) return "redirect:/login";
+
+        Utilisateur lecteur = userDetails.getUtilisateur();
+
+        try {
+            pretWorkflowService.retournerPret(id, lecteur);
+            redirectAttrs.addFlashAttribute("success", "Ressource retournée !");
         } catch (Exception e) {
             redirectAttrs.addFlashAttribute("error", e.getMessage());
         }

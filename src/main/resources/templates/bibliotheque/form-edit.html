@@ -7,9 +7,10 @@
     <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <style>#map { height: 350px; margin-top: 10px; border-radius: 12px; }</style>
+    <style>
+        #map { height: 350px; margin-top: 10px; border-radius: 12px; }
+    </style>
 </head>
-
 <body>
 
 <div th:replace="layout/header :: header"></div>
@@ -62,11 +63,6 @@
                     <input type="text" th:field="*{telephone}" placeholder="+216 12 345 678">
                 </div>
 
-                <div class="form-group">
-                    <label>Email de contact</label>
-                    <input type="email" th:field="*{emailContact}" placeholder="contact@bibliotheque.tn">
-                </div>
-
                 <!-- MAP -->
                 <div class="form-group" style="grid-column: span 2;">
                     <label>Localisation sur la carte</label>
@@ -90,9 +86,11 @@
 <div th:replace="layout/footer :: footer"></div>
 
 <script th:inline="javascript">
+    // Valeurs initiales lat/lng
     let lat = [[${bibliotheque.adresse.latitude != null ? bibliotheque.adresse.latitude : 'null'}]];
     let lng = [[${bibliotheque.adresse.longitude != null ? bibliotheque.adresse.longitude : 'null'}]];
 
+    // Initialisation carte Leaflet
     const map = L.map('map');
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap'
@@ -105,13 +103,13 @@
         document.getElementById("longitude").value = lng;
     }
 
-    // Si lat/lng existants, centrer sur eux
+    // Si lat/lng existants, centrer dessus
     if(lat !== null && lng !== null){
         marker.setLatLng([lat,lng]);
         map.setView([lat,lng], 13);
         updateLatLng(lat,lng);
     } else {
-        // Sinon géocoder via rue/ville/codePostal
+        // Sinon géocoder via adresse
         const rue = document.getElementById("rue").value;
         const ville = document.getElementById("ville").value;
         const codePostal = document.getElementById("codePostal").value;
@@ -132,9 +130,9 @@
             });
     }
 
-    // Click sur la map → reverse geocoding
+    // Click sur la carte → reverse geocoding
     map.on('click', e=>{
-        const latlng=e.latlng;
+        const latlng = e.latlng;
         marker.setLatLng(latlng);
         updateLatLng(latlng.lat,latlng.lng);
 
@@ -170,6 +168,7 @@
     document.getElementById("rue").addEventListener("change", geocodeAddress);
     document.getElementById("ville").addEventListener("change", geocodeAddress);
     document.getElementById("codePostal").addEventListener("change", geocodeAddress);
+
 </script>
 
 </body>
