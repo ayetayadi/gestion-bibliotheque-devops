@@ -4,6 +4,30 @@
     <meta charset="UTF-8">
     <title>Prêts en cours</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <style>
+        .badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        .badge-reserve { background: #ff9800; }
+        .badge-emprunte { background: #1976d2; }
+        .badge-en_cours { background: #009688; }
+        .badge-retourne { background: #9c27b0; }
+        .badge-cloture { background: #555; }
+        .btn-sm {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        input[type="date"] {
+            padding: 4px;
+            font-size: 12px;
+            margin-right: 4px;
+        }
+    </style>
 </head>
 <body>
 
@@ -11,70 +35,56 @@
 <div th:replace="layout/sidebar :: sidebar"></div>
 
 <main class="content">
+    <h2>📚 Prêts en cours</h2>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Ressource</th>
+            <th>Lecteur</th>
+            <th>Email</th>
+            <th>Statut</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="pret : ${prets}">
+            <td th:text="${pret.ressource.titre}"></td>
+            <td th:text="${pret.lecteur.nom + ' ' + pret.lecteur.prenom}"></td>
+            <td th:text="${pret.lecteur.email}"></td>
+            <td>
+                <span class="badge" 
+                      th:classappend="' badge-' + ${pret.statut.name().toLowerCase()}"
+                      th:text="${pret.statut}"></span>
+            </td>
+            <td>
+                <!-- Validation prêt RESERVE : date de début et fin -->
+                <form th:if="${pret.statut.name() == 'RESERVE'}"
+                      th:action="@{/bibliothecaire/prets/valider/{id}(id=${pret.id})}"
+                      method="post">
+                    <label>Début:</label>
+                    <input type="date" name="dateDebut" required>
+                    <label>Fin:</label>
+                    <input type="date" name="dateFin" required>
+                    <button class="btn btn-success btn-sm">Valider</button>
+                </form>
 
-    <div class="page-header">
-        <h2>📦 Prêts en cours</h2>
-        <p class="text-muted">Gestion des prêts de la bibliothèque</p>
-    </div>
+                <!-- Retourner un prêt EMPRUNTE / EN_COURS -->
+                <form th:if="${pret.statut.name() == 'EMPRUNTE' or pret.statut.name() == 'EN_COURS'}"
+                      th:action="@{/bibliothecaire/prets/retourner/{id}(id=${pret.id})}"
+                      method="post">
+                    <button class="btn btn-warning btn-sm">Retourner</button>
+                </form>
 
-    <div class="card">
-        <table class="table">
-            <thead>
-            <tr>
-                <th>Lecteur</th>
-                <th>Ressource</th>
-                <th>Statut</th>
-                <th>Début</th>
-                <th>Retour prévu</th>
-                <th>Action</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            <tr th:each="pret : ${prets}">
-                <td th:text="${pret.lecteur.nom + ' ' + pret.lecteur.prenom}"></td>
-                <td th:text="${pret.ressource.titre}"></td>
-
-                <td>
-                    <span th:text="${pret.statut}"
-                          th:class="'badge badge-' + ${pret.statut.name().toLowerCase()}"></span>
-                </td>
-
-                <td th:text="${pret.dateDebutEmprunt} ?: '-'"></td>
-                <td th:text="${pret.dateFinPrevu} ?: '-'"></td>
-
-                <td>
-                    <!-- ✅ VALIDER -->
-                    <form th:if="${pret.statut.name() == 'RESERVE'}"
-                          th:action="@{/bibliothecaire/prets/valider/{id}(id=${pret.id})}"
-                          method="post">
-                        <button class="btn btn-success btn-sm">
-                            ✔ Valider
-                        </button>
-                    </form>
-
-                    <!-- 🔒 CLÔTURER -->
-                    <form th:if="${pret.statut.name() == 'RETOURNE'}"
-                          th:action="@{/bibliothecaire/prets/cloturer/{id}(id=${pret.id})}"
-                          method="post">
-                        <button class="btn btn-primary btn-sm">
-                            🔒 Clôturer
-                        </button>
-                    </form>
-
-                    <span th:if="${pret.statut.name() == 'EN_COURS'}">—</span>
-                </td>
-            </tr>
-
-            <tr th:if="${#lists.isEmpty(prets)}">
-                <td colspan="6" class="text-center text-muted">
-                    Aucun prêt en cours
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-
+                <!-- Clôturer un prêt RETOURNE -->
+                <form th:if="${pret.statut.name() == 'RETOURNE'}"
+                      th:action="@{/bibliothecaire/prets/cloturer/{id}(id=${pret.id})}"
+                      method="post">
+                    <button class="btn btn-primary btn-sm">Clôturer</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
 </main>
 
 </body>

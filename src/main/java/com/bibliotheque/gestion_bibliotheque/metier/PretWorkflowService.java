@@ -24,12 +24,9 @@ public class PretWorkflowService {
     private final PretRepository pretRepository;
     private final StockBibliothequeRepository stockRepository;
 
-    // 1️⃣ RESERVER UNE RESSOURCE
-    public Pret reserverRessource(Utilisateur lecteur,
-                                  Ressource ressource,
-                                  Bibliotheque bibliotheque,
-                                  StockBibliotheque stock) {
-
+    // 1️⃣ RÉSERVER UNE RESSOURCE
+    public Pret reserverRessource(Utilisateur lecteur, Ressource ressource,
+                                  Bibliotheque bibliotheque, StockBibliotheque stock) {
         if (stock.getQuantiteDisponible() <= 0) {
             throw new IllegalStateException("Aucun exemplaire disponible pour cette ressource.");
         }
@@ -47,11 +44,9 @@ public class PretWorkflowService {
 
     // 2️⃣ VALIDER UN EMPRUNT (RESERVE → EMPRUNTE)
     public Pret validerEmprunt(Long pretId, Utilisateur bibliothecaire) {
-
         Pret pret = getPretOrThrow(pretId);
 
-        if (!pret.getBibliotheque().getId()
-                .equals(bibliothecaire.getBibliotheque().getId())) {
+        if (!pret.getBibliotheque().getId().equals(bibliothecaire.getBibliotheque().getId())) {
             throw new SecurityException("Vous ne pouvez gérer que les prêts de votre bibliothèque.");
         }
 
@@ -74,13 +69,35 @@ public class PretWorkflowService {
         return pretRepository.save(pret);
     }
 
-    // 3️⃣ CLÔTURER LE PRÊT (RETOURNE → CLOTURE)
-    public Pret cloturerPret(Long pretId, Utilisateur bibliothecaire, String commentaire) {
-
+    // 3️⃣ RETOURNER UNE RESSOURCE (EMPRUNTE / EN_COURS → RETOURNE)
+    public Pret retournerPret(Long pretId, Utilisateur utilisateur) {
         Pret pret = getPretOrThrow(pretId);
 
-        if (!pret.getBibliotheque().getId()
-                .equals(bibliothecaire.getBibliotheque().getId())) {
+        // Vérification que le prêteur est bien le propriétaire ou le bibliothécaire
+        if (!pret.getLecteur().getId().equals(utilisateur.getId()) &&
+            (pret.getBibliotheque() == null || !pret.getBibliotheque().getId().equals(utilisateur.getBibliotheque().getId()))) {
+            throw new SecurityException("Vous ne pouvez pas retourner ce prêt.");
+        }
+
+        if (pret.getStatut() != StatutPret.EMPRUNTE && pret.getStatut() != StatutPret.EN_COURS) {
+            throw new IllegalStateException("Seul un prêt EMPRUNTE ou EN_COURS peut être retourné.");
+        }
+
+        StockBibliotheque stock = pret.getStockBibliotheque();
+        stock.setQuantiteDisponible(stock.getQuantiteDisponible() + 1);
+        stockRepository.save(stock);
+
+        pret.setStatut(StatutPret.RETOURNE);
+        pret.setDateRetour(LocalDateTime.now());
+
+        return pretRepository.save(pret);
+    }
+
+    // 4️⃣ CLÔTURER LE PRÊT (RETOURNE → CLOTURE)
+    public Pret cloturerPret(Long pretId, Utilisateur bibliothecaire, String commentaire) {
+        Pret pret = getPretOrThrow(pretId);
+
+        if (!pret.getBibliotheque().getId().equals(bibliothecaire.getBibliotheque().getId())) {
             throw new SecurityException("Vous ne pouvez gérer que les prêts de votre bibliothèque.");
         }
 
@@ -95,9 +112,8 @@ public class PretWorkflowService {
         return pretRepository.save(pret);
     }
 
-    // 4️⃣ ANNULER UNE RÉSERVATION
+    // 5️⃣ ANNULER UNE RÉSERVATION (par le lecteur)
     public Pret annulerReservation(Long pretId, Utilisateur lecteur) {
-
         Pret pret = getPretOrThrow(pretId);
 
         if (pret.getStatut() != StatutPret.RESERVE) {
@@ -114,7 +130,7 @@ public class PretWorkflowService {
         return pretRepository.save(pret);
     }
 
-    // 5️⃣ UTILITAIRE
+    // 6️⃣ UTILITAIRE
     private Pret getPretOrThrow(Long id) {
         return pretRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Prêt introuvable."));
