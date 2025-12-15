@@ -43,7 +43,9 @@ public class LecteurController {
             Ressource res = ressourceService.getById(id);
             StockBibliotheque stock = ressourceService.getStock(res);
 
-            pretWorkflowService.reserverRessource(lecteur, res, stock.getBibliotheque(), stock);
+            // ✅ Appel corrigé : uniquement 3 arguments
+            pretWorkflowService.reserverRessource(lecteur, res, stock);
+
             redirectAttrs.addFlashAttribute("success", "Réservation effectuée !");
         } catch (Exception e) {
             redirectAttrs.addFlashAttribute("error", e.getMessage());

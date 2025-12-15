@@ -35,6 +35,12 @@
 <div th:replace="layout/sidebar :: sidebar"></div>
 
 <main class="content">
+
+<div id="notif-container">
+    <h4>Notifications</h4>
+    <ul id="notifications"></ul>
+</div>
+
     <h2>📚 Prêts en cours</h2>
     <table class="table">
         <thead>
@@ -88,4 +94,24 @@
 </main>
 
 </body>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+<script>
+    const socket = new SockJS('/ws');
+    const stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, function(frame) {
+        console.log('Connecté: ' + frame);
+
+        stompClient.subscribe('/user/' + "${#authentication.name()}" + '/topic/notifications', function(msg) {
+            const notifList = document.getElementById('notifications');
+            const li = document.createElement('li');
+            li.textContent = msg.body;
+            notifList.prepend(li); // Ajoute en haut
+        });
+    });
+</script>
+
 </html>
