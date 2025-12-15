@@ -115,18 +115,50 @@ public class SuperAdminAdminController {
         }
     }
 
-    /* =====================================================
-     * SUPPRESSION (SOFT DELETE)
-     * ===================================================== */
-    @GetMapping("/delete/{id}")
-    public String deleteAdmin(
-            @PathVariable Long id,
-            RedirectAttributes redirectAttributes
-    ) {
-        utilisateurService.deleteAdmin(id);
+
+    // ================= DELETE (SOFT) =================
+   @GetMapping("/delete/{id}")
+public String deleteAdmin(
+        @PathVariable Long id,
+        RedirectAttributes redirectAttributes
+) {
+    utilisateurService.desactiverAdmin(id);
+    redirectAttributes.addFlashAttribute(
+            "success", "Administrateur désactivé avec succès"
+    );
+    return "redirect:/super-admin/admins";
+}
+
+@GetMapping("/changer-statut/{id}")
+public String changerStatutAdmin(
+        @PathVariable Long id,
+        RedirectAttributes redirectAttributes
+) {
+    Utilisateur admin = utilisateurService.getById(id);
+
+    try {
+        if (admin.isActif()) {
+            utilisateurService.desactiverAdmin(id);
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    "Administrateur désactivé : il ne peut plus se connecter."
+            );
+        } else {
+            utilisateurService.activerAdmin(id);
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    "Administrateur réactivé : il peut se connecter à nouveau."
+            );
+        }
+    } catch (IllegalStateException e) {
+        // ✅ Message métier affiché à l'utilisateur
         redirectAttributes.addFlashAttribute(
-                "success", "Administrateur désactivé avec succès"
+                "error",
+                e.getMessage()
         );
-        return "redirect:/super-admin/admins";
     }
+
+    return "redirect:/super-admin/admins";
+}
+
 }

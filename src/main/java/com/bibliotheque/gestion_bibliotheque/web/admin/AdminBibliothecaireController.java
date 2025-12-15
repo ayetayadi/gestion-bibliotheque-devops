@@ -102,17 +102,30 @@ public String list(
         return "redirect:/admin/bibliothecaires";
     }
 
-    // ======================= DELETE (SOFT) =======================
-    @GetMapping("/delete/{id}")
-    public String delete(
-            @PathVariable Long id,
-            Principal principal,
-            RedirectAttributes redirectAttributes
-    ) {
-        Utilisateur admin = utilisateurService.getByEmail(principal.getName());
-        utilisateurService.desactiverBibliothecaire(id, admin);
+    @GetMapping("/changer-statut/{id}")
+public String changerStatut(
+        @PathVariable Long id,
+        Principal principal,
+        RedirectAttributes redirectAttributes
+) {
+    Utilisateur admin = utilisateurService.getByEmail(principal.getName());
+    Utilisateur biblio = utilisateurService.getById(id);
 
-        redirectAttributes.addFlashAttribute("success", "Bibliothécaire désactivé avec succès");
-        return "redirect:/admin/bibliothecaires";
+    if (biblio.isActif()) {
+        utilisateurService.desactiverBibliothecaire(id, admin);
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Bibliothécaire désactivé"
+        );
+    } else {
+        utilisateurService.activerBibliothecaire(id, admin);
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Bibliothécaire réactivé"
+        );
     }
+
+    return "redirect:/admin/bibliothecaires";
+}
+
 }

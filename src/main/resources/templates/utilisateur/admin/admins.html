@@ -45,7 +45,15 @@
                 <td th:text="${admin.email}"></td>
 
                 <!-- 🆕 Bibliothèque assignée -->
-                <td th:text="${admin.bibliotheque != null ? admin.bibliotheque.nom : '—'}"></td>
+                <td>
+    <span th:text="${admin.bibliotheque.nom}"></span>
+    <span th:if="${!admin.bibliotheque.actif}"
+          class="badge badge-red"
+          style="margin-left:6px;">
+        Inactive
+    </span>
+</td>
+
 
                 <td><span class="badge badge-blue" th:text="${admin.role}"></span></td>
 
@@ -54,14 +62,43 @@
                     <span th:unless="${admin.actif}" class="badge badge-red">Inactif</span>
                 </td>
 
-                <td class="actions">
-                    <a th:href="@{/super-admin/admins/edit/{id}(id=${admin.id})}"
-                       class="btn btn-sm btn-warning">✏️ Modifier</a>
+              <td class="actions">
 
-                    <a th:href="@{/super-admin/admins/delete/{id}(id=${admin.id})}"
-                       class="btn btn-sm btn-danger"
-                       onclick="return confirm('Supprimer cet administrateur ?');">🗑 Supprimer</a>
-                </td>
+    <!-- ✏️ MODIFIER -->
+    <a th:href="@{/super-admin/admins/edit/{id}(id=${admin.id})}"
+       class="btn btn-sm btn-warning">
+        ✏️ Modifier
+    </a>
+
+    <!-- 🔒 ACTIF → DÉSACTIVER -->
+    <a th:if="${admin.actif}"
+       th:href="@{/super-admin/admins/changer-statut/{id}(id=${admin.id})}"
+       class="btn btn-sm btn-danger"
+       onclick="return confirm('Désactiver cet administrateur ? Il ne pourra plus se connecter.');">
+        🔒 Désactiver
+    </a>
+
+    <!-- 🔓 INACTIF + BIBLIOTHÈQUE ACTIVE → ACTIVER -->
+    <a th:if="${!admin.actif 
+               and admin.bibliotheque != null 
+               and admin.bibliotheque.actif}"
+       th:href="@{/super-admin/admins/changer-statut/{id}(id=${admin.id})}"
+       class="btn btn-sm btn-success"
+       onclick="return confirm('Réactiver cet administrateur ?');">
+        🔓 Activer
+    </a>
+
+    <!-- 🚫 INACTIF + BIBLIOTHÈQUE INACTIVE → BLOQUÉ -->
+    <span th:if="${!admin.actif 
+                  and admin.bibliotheque != null 
+                  and !admin.bibliotheque.actif}"
+          class="badge badge-red"
+          title="La bibliothèque est désactivée">
+        🚫 Bibliothèque inactive
+    </span>
+
+</td>
+
             </tr>
 
             <tr th:if="${#lists.isEmpty(admins)}">

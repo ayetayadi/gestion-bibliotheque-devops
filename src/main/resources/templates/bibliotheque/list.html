@@ -2,8 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Liste des bibliothèques | BiblioNet</title>
-
+    <title>Gestion des bibliothèques | BiblioNet</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 
@@ -18,13 +17,22 @@
         <div>
             <h2>Gestion des bibliothèques</h2>
             <p class="text-muted">
-                Voir, modifier ou désactiver les bibliothèques
+                Voir, modifier ou activer / désactiver les bibliothèques
             </p>
         </div>
 
         <a th:href="@{/super-admin/bibliotheques/add}" class="btn btn-primary">
             ➕ Ajouter une bibliothèque
         </a>
+    </div>
+
+    <!-- MESSAGES -->
+    <div th:if="${success}" class="alert alert-success auto-hide">
+        <span th:text="${success}"></span>
+    </div>
+
+    <div th:if="${warning}" class="alert alert-warning auto-hide">
+        <span th:text="${warning}"></span>
     </div>
 
     <div class="card">
@@ -44,7 +52,7 @@
 
             <tbody>
 
-            <tr th:each="b, stat : ${items}">
+            <tr th:each="b, stat : ${bibliotheques}">
                 <td th:text="${stat.count}"></td>
                 <td th:text="${b.nom}"></td>
                 <td th:text="${b.code}"></td>
@@ -53,40 +61,58 @@
                 <td>
                     <span th:if="${b.actif}" class="badge badge-green">Active</span>
                     <span th:unless="${b.actif}" class="badge badge-red">Inactive</span>
+
+                    <div th:unless="${b.actif}"
+                         style="font-size:12px;color:#b91c1c;margin-top:4px;">
+                        ⚠ Accès suspendu pour les admins et bibliothécaires
+                    </div>
                 </td>
 
                 <td class="actions">
+
                     <a th:href="@{/super-admin/bibliotheques/{id}(id=${b.id})}"
                        class="btn btn-sm btn-info">👁 Voir</a>
 
                     <a th:href="@{/super-admin/bibliotheques/edit/{id}(id=${b.id})}"
                        class="btn btn-sm btn-warning">✏️ Modifier</a>
 
-                    <a th:href="@{/super-admin/bibliotheques/delete/{id}(id=${b.id})}"
+                    <a th:if="${b.actif}"
+                       th:href="@{/super-admin/bibliotheques/changer-statut/{id}(id=${b.id})}"
                        class="btn btn-sm btn-danger"
                        onclick="return confirm('Désactiver cette bibliothèque ?');">
-                        🗑 Désactiver
+                        🔒 Désactiver
                     </a>
+
+                    <a th:unless="${b.actif}"
+                       th:href="@{/super-admin/bibliotheques/changer-statut/{id}(id=${b.id})}"
+                       class="btn btn-sm btn-success"
+                       onclick="return confirm('Réactiver cette bibliothèque ?');">
+                        🔓 Activer
+                    </a>
+
                 </td>
             </tr>
 
-            <tr th:if="${#lists.isEmpty(items)}">
-                <td colspan="6" style="padding:20px;text-align:center;">
+            <tr th:if="${#lists.isEmpty(bibliotheques)}">
+                <td colspan="6" style="text-align:center;padding:20px;">
                     Aucune bibliothèque trouvée
                 </td>
             </tr>
 
             </tbody>
-
         </table>
     </div>
-
-    <!-- PAGINATION CORRECTE -->
-    <div th:replace="fragments/pagination :: pagination(page=${page}, baseUrl='/super-admin/bibliotheques')"></div>
 
 </main>
 
 <div th:replace="layout/footer :: footer"></div>
+
+<script>
+    setTimeout(() => {
+        document.querySelectorAll('.auto-hide')
+            .forEach(el => el.remove());
+    }, 4000);
+</script>
 
 </body>
 </html>

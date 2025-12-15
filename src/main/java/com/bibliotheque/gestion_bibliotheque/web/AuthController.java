@@ -31,23 +31,18 @@ public class AuthController {
         return "auth/register";
     }
 
-    // REGISTER SUBMIT
     @PostMapping("/register")
-    public String registerSubmit(
-            @Valid @ModelAttribute("utilisateur") Utilisateur utilisateur,
-            BindingResult bindingResult,
-            Model model
-    ) {
-        if (bindingResult.hasErrors()) {
-            return "auth/register";
-        }
-
-        try {
-            utilisateurService.registerLecteur(utilisateur);
-            return "redirect:/login?registered=true";
-        } catch (RuntimeException e) {
-            model.addAttribute("error", e.getMessage());
-            return "auth/register";
-        }
+public String registerSubmit(
+        @ModelAttribute("utilisateur") Utilisateur utilisateur,
+        Model model
+) {
+    try {
+        utilisateurService.registerLecteur(utilisateur);
+        return "redirect:/login?registered=true";
+    } catch (Exception e) {
+        model.addAttribute("error", e.getMessage());
+        return "auth/register";
     }
+}
+
 }

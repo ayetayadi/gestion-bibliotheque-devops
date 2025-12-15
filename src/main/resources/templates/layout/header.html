@@ -3,29 +3,48 @@
 <body>
 
 <header th:fragment="header" class="header">
+
     <div class="header-left">
         <button class="menu-btn" onclick="toggleSidebar()">☰</button>
         <span class="app-title">📘 BiblioNet</span>
     </div>
 
-    <div class="header-right">
-        <div class="user-info">
-            <span class="user-email" th:text="${#authentication.name}"></span>
+    <div class="header-right" th:if="${currentUser != null}">
 
-            <span class="role-badge"
-                  th:switch="${#authentication.authorities[0].authority}">
-                <span th:case="'ROLE_SUPER_ADMIN'">Super Admin</span>
-                <span th:case="'ROLE_ADMIN'">Admin</span>
-                <span th:case="'ROLE_BIBLIOTHECAIRE'">Bibliothécaire</span>
-                <span th:case="'ROLE_LECTEUR'">Lecteur</span>
-                <span th:case="*">Utilisateur</span>
+        <div class="user-info">
+
+            <!-- EMAIL -->
+            <span class="user-email"
+                  th:text="${currentUser.email}">
             </span>
+
+            <!-- ROLE -->
+            <span class="role-badge"
+                  th:switch="${currentUser.role}">
+
+                <span th:case="SUPER_ADMIN">Super Admin</span>
+                <span th:case="ADMIN">Admin</span>
+                <span th:case="BIBLIOTHECAIRE">Bibliothécaire</span>
+                <span th:case="LECTEUR">Lecteur</span>
+                <span th:case="*">Utilisateur</span>
+
+            </span>
+
+            <!-- 🏛️ BIBLIOTHÈQUE (ADMIN & BIBLIOTHÉCAIRE) -->
+            <span class="bibliotheque-name"
+                  th:if="${currentUser.bibliotheque != null}">
+                | <strong th:text="${currentUser.bibliotheque.nom}"></strong>
+            </span>
+
         </div>
 
+        <!-- LOGOUT -->
         <form th:action="@{/logout}" method="post">
             <button class="logout-btn">Déconnexion</button>
         </form>
+
     </div>
+
 </header>
 
 </body>

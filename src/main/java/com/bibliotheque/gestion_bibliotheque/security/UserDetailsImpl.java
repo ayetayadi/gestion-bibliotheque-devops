@@ -7,6 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.bibliotheque.gestion_bibliotheque.entities.user.Role;
 import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
 
 public class UserDetailsImpl implements UserDetails {
@@ -56,7 +57,16 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     @Override
-    public boolean isEnabled() {
+public boolean isEnabled() {
+
+    // 🔥 SUPER ADMIN : accès global
+    if (utilisateur.getRole() == Role.SUPER_ADMIN) {
         return utilisateur.isActif();
     }
+
+    // ADMIN / BIBLIOTHECAIRE : dépend de la bibliothèque
+    return utilisateur.isActif()
+            && utilisateur.getBibliotheque() != null
+            && utilisateur.getBibliotheque().isActif();
+}
 }
