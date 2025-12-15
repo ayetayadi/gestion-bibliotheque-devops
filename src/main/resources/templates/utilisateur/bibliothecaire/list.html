@@ -63,16 +63,30 @@
         </td>
 
         <td class="actions">
-            <a th:href="@{/admin/bibliothecaires/edit/{id}(id=${b.id})}" class="btn btn-sm btn-warning">
-                ✏️ Modifier
-            </a>
 
-            <a th:href="@{/admin/bibliothecaires/delete/{id}(id=${b.id})}"
-               onclick="return confirm('Désactiver ce bibliothécaire ?')"
-               class="btn btn-sm btn-danger">
-                🗑 Désactiver
-            </a>
-        </td>
+    <a th:href="@{/admin/bibliothecaires/edit/{id}(id=${b.id})}"
+       class="btn btn-sm btn-warning">
+        ✏️ Modifier
+    </a>
+
+    <!-- SI ACTIF → DÉSACTIVER -->
+    <a th:if="${b.actif}"
+       th:href="@{/admin/bibliothecaires/changer-statut/{id}(id=${b.id})}"
+       onclick="return confirm('Désactiver ce bibliothécaire ?');"
+       class="btn btn-sm btn-danger">
+        🔒 Désactiver
+    </a>
+
+    <!-- SI INACTIF → ACTIVER -->
+    <a th:unless="${b.actif}"
+       th:href="@{/admin/bibliothecaires/changer-statut/{id}(id=${b.id})}"
+       onclick="return confirm('Réactiver ce bibliothécaire ?');"
+       class="btn btn-sm btn-success">
+        🔓 Activer
+    </a>
+
+</td>
+
     </tr>
 
     <tr th:if="${#lists.isEmpty(items)}">

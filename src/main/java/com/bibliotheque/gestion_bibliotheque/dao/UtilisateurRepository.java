@@ -1,5 +1,6 @@
 package com.bibliotheque.gestion_bibliotheque.dao;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -14,5 +15,11 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> 
     Optional<Utilisateur> findByEmail(String email);
     Page<Utilisateur> findByRole(Role role, Pageable pageable);
     boolean existsByEmail(String email);
-    Page<Utilisateur> findByBibliothequeId(Long id, Pageable pageable);
+    Page<Utilisateur> findByRoleAndBibliothequeId(
+        Role role,
+        Long bibliothequeId,
+        Pageable pageable
+        );
+
+    List<Utilisateur> findByBibliothequeId(Long bibliothequeId);
 }

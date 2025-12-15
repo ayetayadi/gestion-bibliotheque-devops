@@ -29,7 +29,8 @@
 
     <div class="card">
 
-        <p><strong>Adresse :</strong>
+        <p>
+            <strong>Adresse :</strong>
             <span th:text="${bibliotheque.adresse.rue}"></span>,
             <span th:text="${bibliotheque.adresse.ville}"></span>
         </p>
@@ -37,19 +38,23 @@
         <p>
             <strong>Statut :</strong>
             <span th:if="${bibliotheque.actif}" class="badge badge-green">Active</span>
-            <span th:unless="${bibliotheque.actif}" class="badge badge-red">Inactive</span>
+            <span th:unless="${bibliotheque.actif}" class="badge badge-red">
+                Inactive — accès suspendu
+            </span>
         </p>
 
-        <div id="map" style="height: 350px; border-radius: 12px; margin-top: 20px;"></div>
+        <div id="map"
+             style="height: 350px; border-radius: 12px; margin-top: 20px;">
+        </div>
     </div>
 
 </main>
 
 <div th:replace="layout/footer :: footer"></div>
 
-<script>
-    const lat = /*[[${bibliotheque.adresse.latitude}]]*/ 36.8065;
-    const lng = /*[[${bibliotheque.adresse.longitude}]]*/ 10.1815;
+<script th:inline="javascript">
+    const lat = [[${bibliotheque.adresse.latitude}]];
+    const lng = [[${bibliotheque.adresse.longitude}]];
 
     const map = L.map('map').setView([lat, lng], 13);
 
