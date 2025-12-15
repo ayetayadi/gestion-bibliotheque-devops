@@ -24,7 +24,7 @@
 
     <div class="card form-card">
 
-        <form th:action="@{'/bibliothecaire/ressources/update/' + ${ressource.id}}"
+        <form th:action="@{'/ressources/update/' + ${ressource.id}}"
               method="post" enctype="multipart/form-data">
 
             <div class="form-grid">
@@ -92,7 +92,7 @@
             </div>
 
             <div class="form-actions">
-                <a th:href="@{/bibliothecaire/ressources}" class="btn btn-secondary">Annuler</a>
+                <a th:href="@{/ressources}" class="btn btn-secondary">Annuler</a>
                 <button type="submit" class="btn btn-primary">Mettre à jour</button>
             </div>
 
