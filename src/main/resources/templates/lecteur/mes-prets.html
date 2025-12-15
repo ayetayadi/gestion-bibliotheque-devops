@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mes prêts</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+
+<div th:replace="layout/header :: header"></div>
+<div th:replace="layout/sidebar :: sidebar"></div>
+
+<main class="content">
+
+    <div class="page-header">
+        <h2>📚 Mes prêts</h2>
+        <p class="text-muted">Historique et état de vos emprunts</p>
+    </div>
+
+    <div class="card">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Ressource</th>
+                <th>Bibliothèque</th>
+                <th>Statut</th>
+                <th>Date début</th>
+                <th>Date retour</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="pret : ${prets}">
+                <td th:text="${pret.ressource.titre}"></td>
+                <td th:text="${pret.bibliotheque.nom}"></td>
+                <td>
+                    <span th:text="${pret.statut}"
+                          th:class="'badge badge-' + ${pret.statut.name().toLowerCase()}"></span>
+                </td>
+                <td th:text="${pret.dateDebutEmprunt} ?: '-'"></td>
+                <td th:text="${pret.dateRetour} ?: '-'"></td>
+
+                <td>
+                    <!-- 🔁 RETOURNER -->
+                    <form th:if="${pret.statut.name() == 'EN_COURS'}"
+                          th:action="@{/lecteur/prets/retourner/{id}(id=${pret.id})}"
+                          method="post">
+                        <button class="btn btn-warning btn-sm">
+                            🔄 Retourner
+                        </button>
+                    </form>
+
+                    <span th:if="${pret.statut.name() != 'EN_COURS'}">—</span>
+                </td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(prets)}">
+                <td colspan="6" class="text-center text-muted">
+                    Aucun prêt trouvé
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</main>
+
+</body>
+</html>
