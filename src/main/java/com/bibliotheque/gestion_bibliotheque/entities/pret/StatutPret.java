@@ -5,5 +5,6 @@ public enum StatutPret {
     EMPRUNTE,
     EN_COURS,
     RETOURNE,
-    CLOTURE
+    CLOTURE,
+    ANNULE   // ⭐ OBLIGATOIRE !
 }

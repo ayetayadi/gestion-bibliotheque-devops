@@ -5,6 +5,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.bibliotheque.gestion_bibliotheque.dao.PretRepository;
 import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.StockBibliotheque;
@@ -12,8 +13,11 @@ import com.bibliotheque.gestion_bibliotheque.entities.ressource.Ressource;
 import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
 import com.bibliotheque.gestion_bibliotheque.metier.PretWorkflowService;
 import com.bibliotheque.gestion_bibliotheque.metier.RessourceService;
+import com.bibliotheque.gestion_bibliotheque.security.UserDetailsImpl;
+import com.bibliotheque.gestion_bibliotheque.entities.pret.StatutPret;
 
 import lombok.RequiredArgsConstructor;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/lecteur")
@@ -25,57 +29,65 @@ public class LecteurController {
     private final PretRepository pretRepository;
     private final RessourceService ressourceService;
 
-    /* =====================================================
-     * 1️⃣ VOIR MES PRÊTS
-     * ===================================================== */
-    @GetMapping("/prets")
-    public String mesPrets(@AuthenticationPrincipal Utilisateur lecteur,
-                           Model model) {
+    // 1️⃣ RÉSERVER UNE RESSOURCE
+    @PostMapping("/prets/reserver/{id}")
+    public String reserver(@PathVariable Long id,
+                           @AuthenticationPrincipal UserDetailsImpl userDetails,
+                           RedirectAttributes redirectAttrs) {
 
-        model.addAttribute("prets",
-                pretRepository.findByLecteur(lecteur));
+        if (userDetails == null) return "redirect:/login";
 
-        return "pret/mes-prets";
-    }
+        Utilisateur lecteur = userDetails.getUtilisateur();
 
-    /* =====================================================
-     * 2️⃣ RÉSERVER UNE RESSOURCE (VRAIE LOGIQUE)
-     * ===================================================== */
-    @PostMapping("/prets/reserver/{ressourceId}")
-    public String reserverPret(@PathVariable Long ressourceId,
-                               @AuthenticationPrincipal Utilisateur lecteur) {
+        try {
+            Ressource res = ressourceService.getById(id);
+            StockBibliotheque stock = ressourceService.getStock(res);
 
-        // 🔎 1. Charger la ressource
-        Ressource ressource = ressourceService.getById(ressourceId);
-
-        // 🔎 2. Charger le stock correspondant
-        StockBibliotheque stock = ressourceService.getStock(ressource);
-
-        // 🔐 3. Vérification simple de sécurité (optionnelle mais propre)
-        if (!stock.getBibliotheque().getId()
-                .equals(lecteur.getBibliotheque().getId())) {
-            throw new RuntimeException("Ressource non disponible dans votre bibliothèque");
+            pretWorkflowService.reserverRessource(lecteur, res, stock.getBibliotheque(), stock);
+            redirectAttrs.addFlashAttribute("success", "Réservation effectuée !");
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("error", e.getMessage());
         }
 
-        // 🔁 4. Lancer le workflow métier
-        pretWorkflowService.reserverRessource(
-                lecteur,
-                ressource,
-                stock.getBibliotheque(),
-                stock
-        );
-
-        return "redirect:/lecteur/prets";
+        return "redirect:/catalogue";
     }
 
-    /* =====================================================
-     * 3️⃣ RETOURNER UNE RESSOURCE
-     * ===================================================== */
-    @PostMapping("/prets/retourner/{id}")
-    public String retournerPret(@PathVariable Long id,
-                                @AuthenticationPrincipal Utilisateur lecteur) {
+    // 2️⃣ AFFICHER MES PRÊTS (exclure les réservations annulées)
+    @GetMapping("/prets")
+    public String mesPrets(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                           Model model) {
 
-        pretWorkflowService.retournerRessource(id, lecteur);
+        if (userDetails == null) return "redirect:/login";
+
+        Utilisateur lecteur = userDetails.getUtilisateur();
+
+        var prets = pretRepository.findByLecteur(lecteur)
+                        .stream()
+                        .filter(p -> p.getStatut() != null && p.getStatut() != StatutPret.ANNULE)
+                        .collect(Collectors.toList());
+
+        model.addAttribute("prets", prets);
+
+        return "lecteur/mes-prets";
+    }
+
+    // 3️⃣ ANNULER UNE RÉSERVATION
+    @PostMapping("/prets/annuler/{id}")
+    public String annulerReservation(@PathVariable Long id,
+                                     @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                     RedirectAttributes redirectAttrs) {
+
+        if (userDetails == null) return "redirect:/login";
+
+        Utilisateur lecteur = userDetails.getUtilisateur();
+
+        try {
+            pretWorkflowService.annulerReservation(id, lecteur);
+            redirectAttrs.addFlashAttribute("success", "Réservation annulée.");
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("error", e.getMessage());
+        }
+
         return "redirect:/lecteur/prets";
     }
 }

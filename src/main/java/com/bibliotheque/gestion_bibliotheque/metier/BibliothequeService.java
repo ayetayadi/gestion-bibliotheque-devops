@@ -12,27 +12,50 @@ public class BibliothequeService {
     private final BibliothequeRepository bibliothequeRepository;
     private final UtilisateurService utilisateurService;
 
-    public BibliothequeService(BibliothequeRepository bibliothequeRepository, UtilisateurService utilisateurService) {
-        this.bibliothequeRepository = bibliothequeRepository;
-        this.utilisateurService = utilisateurService;
+    // ================= CREATE =================
+    public Bibliotheque creerBibliotheque(Bibliotheque bibliotheque) {
+
+        if (bibliothequeRepository.existsByCode(bibliotheque.getCode())) {
+            throw new IllegalArgumentException(
+                "Le code de la bibliothèque existe déjà"
+            );
+        }
+
+        bibliotheque.setActif(true);
+        return bibliothequeRepository.save(bibliotheque);
     }
 
-    // ================= LISTE =================
+    // ================= READ PAGINÉ =================
+    public Page<Bibliotheque> getAllPaged(Pageable pageable) {
+        return bibliothequeRepository.findAll(pageable);
+    }
+
+    // ================= READ SIMPLE (utilisé par SuperAdmin) =================
     public List<Bibliotheque> getAll() {
         return bibliothequeRepository.findAll();
     }
 
-    // ================= GET =================
+    // Alias (si tu veux garder listAll)
+    public List<Bibliotheque> listAll() {
+        return bibliothequeRepository.findAll();
+    }
+
+    // ================= READ BY ID =================
+
     public Bibliotheque getById(Long id) {
         return bibliothequeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Bibliothèque introuvable"));
     }
 
-    // ================= CREATE =================
-    public void creerBibliotheque(Bibliotheque bibliotheque) {
-        bibliotheque.setActif(true);
-        bibliothequeRepository.save(bibliotheque);
-    }
+    // ================= UPDATE =================
+    public Bibliotheque update(Bibliotheque updated) {
+
+        Bibliotheque existing = getById(updated.getId());
+
+        existing.setNom(updated.getNom());
+        existing.setCode(updated.getCode());
+        existing.setAdresse(updated.getAdresse());
+
 
     // ================= UPDATE =================
     public void updateBibliotheque(Bibliotheque form) {
@@ -42,6 +65,7 @@ public class BibliothequeService {
         biblio.setAdresse(form.getAdresse());
         bibliothequeRepository.save(biblio);
     }
+
 
     // ================= DESACTIVER =================
     public void desactiverBibliotheque(Long id) {

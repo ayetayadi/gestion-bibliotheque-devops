@@ -12,6 +12,7 @@ import com.bibliotheque.gestion_bibliotheque.dao.PretRepository;
 import com.bibliotheque.gestion_bibliotheque.entities.pret.StatutPret;
 import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
 import com.bibliotheque.gestion_bibliotheque.metier.PretWorkflowService;
+import com.bibliotheque.gestion_bibliotheque.security.UserDetailsImpl;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,46 +26,62 @@ public class BibliothecaireController {
     private final PretWorkflowService pretWorkflowService;
 
     /* =====================================================
-     * 1️⃣ VOIR LES PRÊTS À GÉRER
+     * 1️⃣ LISTE DES PRÊTS À GÉRER
      * ===================================================== */
     @GetMapping("/prets")
-    public String pretsEnCours(@AuthenticationPrincipal Utilisateur bibliothecaire,
-                               Model model) {
+    public String pretsEnCours(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            Model model) {
+
+        if (userDetails == null) return "redirect:/login";
+
+        Utilisateur bibliothecaire = userDetails.getUtilisateur();
 
         model.addAttribute("prets",
                 pretRepository.findPretsByBibliothequeAndStatuts(
                         bibliothecaire.getBibliotheque(),
                         List.of(
                                 StatutPret.RESERVE,
+                                StatutPret.EMPRUNTE,
                                 StatutPret.EN_COURS,
                                 StatutPret.RETOURNE
                         )
-                )
-        );
+                ));
 
         return "pret/prets-en-cours";
     }
 
     /* =====================================================
-     * 2️⃣ VALIDER UN PRÊT
+     * 2️⃣ VALIDER UN PRÊT (passer de RESERVE → EMPRUNTE)
      * ===================================================== */
     @PostMapping("/prets/valider/{id}")
-    public String validerPret(@PathVariable Long id,
-                              @AuthenticationPrincipal Utilisateur bibliothecaire) {
+    public String validerPret(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        if (userDetails == null) return "redirect:/login";
+
+        Utilisateur bibliothecaire = userDetails.getUtilisateur();
 
         pretWorkflowService.validerEmprunt(id, bibliothecaire);
+
         return "redirect:/bibliothecaire/prets";
     }
 
     /* =====================================================
-     * 3️⃣ CLÔTURER UN PRÊT
+     * 3️⃣ CLÔTURER UN PRÊT (RETOURNE → CLOTURE)
      * ===================================================== */
     @PostMapping("/prets/cloturer/{id}")
-    public String cloturerPret(@PathVariable Long id,
-                               @AuthenticationPrincipal Utilisateur bibliothecaire) {
+    public String cloturerPret(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(defaultValue = "") String commentaire) {
 
-        // ⭐ Correction ici → ajouter le commentaire vide
-        pretWorkflowService.cloturerPret(id, bibliothecaire, "");
+        if (userDetails == null) return "redirect:/login";
+
+        Utilisateur bibliothecaire = userDetails.getUtilisateur();
+
+        pretWorkflowService.cloturerPret(id, bibliothecaire, commentaire);
 
         return "redirect:/bibliothecaire/prets";
     }

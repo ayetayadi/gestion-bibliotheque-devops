@@ -4,6 +4,8 @@ import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.Bibliotheque;
 import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
 import com.bibliotheque.gestion_bibliotheque.metier.BibliothequeService;
 import com.bibliotheque.gestion_bibliotheque.metier.UtilisateurService;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,46 +17,47 @@ import org.springframework.data.domain.PageRequest;
 @Controller
 @RequestMapping("/super-admin/admins")
 @PreAuthorize("hasRole('SUPER_ADMIN')")
+@RequiredArgsConstructor
 public class SuperAdminAdminController {
 
     private final UtilisateurService utilisateurService;
     private final BibliothequeService bibliothequeService;
 
-    public SuperAdminAdminController(UtilisateurService utilisateurService, BibliothequeService bibliothequeService) {
-        this.utilisateurService = utilisateurService;
-        this.bibliothequeService = bibliothequeService;
+    /* =====================================================
+     * LISTE DES ADMINS (PAGINATION)
+     * ===================================================== */
+    @GetMapping
+    public String listAdmins(
+            @RequestParam(defaultValue = "0") int page,
+            Model model
+    ) {
+        Page<Utilisateur> result =
+                utilisateurService.getAdminsPaged(PageRequest.of(page, 5));
+
+        model.addAttribute("admins", result.getContent());
+        model.addAttribute("page", result);
+
+        return "utilisateur/admin/admins";
     }
 
+    /* =====================================================
+     * FORMULAIRE AJOUT ADMIN
+     * ===================================================== */
+    @GetMapping("/add")
+    public String addAdminForm(Model model) {
 
-@GetMapping
-public String listAdmins(
-        @RequestParam(defaultValue = "0") int page,
-        Model model
-) {
-    Page<Utilisateur> result =
-            utilisateurService.getAdminsPaged(PageRequest.of(page, 5));
+        Utilisateur admin = new Utilisateur();
+        admin.setBibliotheque(new Bibliotheque()); // nécessaire pour éviter null
 
-    model.addAttribute("admins", result.getContent());
-    model.addAttribute("page", result);
+        model.addAttribute("admin", admin);
+        model.addAttribute("bibliotheques", bibliothequeService.getAll());
 
-    return "utilisateur/admin/admins";
-}
+        return "utilisateur/admin/admin-form";
+    }
 
-
-    // ================= FORM AJOUT =================
-@GetMapping("/add")
-public String addAdminForm(Model model) {
-
-    Utilisateur admin = new Utilisateur();
-    admin.setBibliotheque(new Bibliotheque()); // 🔥 obligatoire
-
-    model.addAttribute("admin", admin);
-    model.addAttribute("bibliotheques", bibliothequeService.getAll());
-
-    return "utilisateur/admin/admin-form";
-}
-
-    // ================= AJOUT =================
+    /* =====================================================
+     * AJOUT ADMIN
+     * ===================================================== */
     @PostMapping("/add")
     public String createAdmin(
             @ModelAttribute Utilisateur admin,
@@ -73,23 +76,27 @@ public String addAdminForm(Model model) {
         }
     }
 
-    // ================= FORM UPDATE =================
+    /* =====================================================
+     * FORMULAIRE ÉDITION ADMIN
+     * ===================================================== */
     @GetMapping("/edit/{id}")
-public String editAdmin(@PathVariable Long id, Model model) {
+    public String editAdmin(@PathVariable Long id, Model model) {
 
-    Utilisateur admin = utilisateurService.getById(id);
+        Utilisateur admin = utilisateurService.getById(id);
 
-    if (admin.getBibliotheque() == null) {
-        admin.setBibliotheque(new Bibliotheque());
+        if (admin.getBibliotheque() == null) {
+            admin.setBibliotheque(new Bibliotheque());
+        }
+
+        model.addAttribute("admin", admin);
+        model.addAttribute("bibliotheques", bibliothequeService.getAll());
+
+        return "utilisateur/admin/admin-form-edit";
     }
 
-    model.addAttribute("admin", admin);
-    model.addAttribute("bibliotheques", bibliothequeService.getAll()); // 🆕 obligatoire
-
-    return "utilisateur/admin/admin-form-edit";
-}
-
-    // ================= UPDATE =================
+    /* =====================================================
+     * MISE À JOUR ADMIN
+     * ===================================================== */
     @PostMapping("/edit")
     public String updateAdmin(
             @ModelAttribute Utilisateur admin,
@@ -107,6 +114,7 @@ public String editAdmin(@PathVariable Long id, Model model) {
             return "redirect:/super-admin/admins/edit/" + admin.getId();
         }
     }
+
 
     // ================= DELETE (SOFT) =================
    @GetMapping("/delete/{id}")

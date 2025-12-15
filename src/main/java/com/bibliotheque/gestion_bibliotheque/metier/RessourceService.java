@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.bibliotheque.gestion_bibliotheque.dao.RessourceRepository;
 import com.bibliotheque.gestion_bibliotheque.dao.StockBibliothequeRepository;
+import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.Bibliotheque;
 import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.StockBibliotheque;
 import com.bibliotheque.gestion_bibliotheque.entities.ressource.Ressource;
 import com.bibliotheque.gestion_bibliotheque.entities.ressource.TypeCategorie;
@@ -26,25 +27,32 @@ public class RessourceService {
     private final RessourceRepository ressourceRepo;
     private final StockBibliothequeRepository stockRepo;
 
-    // 📌 LISTE DES RESSOURCES
+    /* =====================================================
+     * 1️⃣ LISTE DES RESSOURCES
+     * ===================================================== */
     public List<Ressource> listAll() {
         return ressourceRepo.findAll();
     }
 
-    // 📌 RÉCUPÉRER UNE RESSOURCE
+    /* =====================================================
+     * 2️⃣ RÉCUPÉRER UNE RESSOURCE PAR ID
+     * ===================================================== */
     public Ressource getById(Long id) {
         return ressourceRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ressource non trouvée"));
     }
 
-    // 📌 RÉCUPÉRER LE STOCK (1 seule méthode !)
+    /* =====================================================
+     * 3️⃣ STOCK D'UNE RESSOURCE
+     * ===================================================== */
     public StockBibliotheque getStock(Ressource r) {
         return stockRepo.findByRessource(r)
-                .orElseThrow(() -> new RuntimeException("Stock non trouvé"));
+                .orElseThrow(() -> new RuntimeException("Stock non trouvé pour cette ressource"));
     }
 
-
-    // 📌 AJOUTER UNE RESSOURCE
+    /* =====================================================
+     * 4️⃣ AJOUT D’UNE RESSOURCE PAR UN BIBLIOTHÉCAIRE
+     * ===================================================== */
     public Ressource ajouterRessource(
             String titre,
             String auteur,
@@ -62,12 +70,11 @@ public class RessourceService {
         r.setCategorie(categorie);
         r.setBibliotheque(bibliothecaire.getBibliotheque());
 
-        // 📸 Upload couverture
+        // 📸 Upload de la couverture
         if (couvertureFile != null && !couvertureFile.isEmpty()) {
 
             String original = couvertureFile.getOriginalFilename();
-            String ext = original.substring(original.lastIndexOf("."));
-
+            String ext = original.substring(original.lastIndexOf(".")); 
             String fileName = "cover_" + System.currentTimeMillis() + ext;
 
             Path dir = Paths.get("uploads/covers");
@@ -84,7 +91,7 @@ public class RessourceService {
 
         Ressource saved = ressourceRepo.save(r);
 
-        // 📦 STOCK
+        // 📦 Création du stock associé
         StockBibliotheque stock = new StockBibliotheque();
         stock.setBibliotheque(bibliothecaire.getBibliotheque());
         stock.setRessource(saved);
@@ -96,8 +103,9 @@ public class RessourceService {
         return saved;
     }
 
-
-    // 📌 MODIFIER UNE RESSOURCE
+    /* =====================================================
+     * 5️⃣ MODIFICATION D’UNE RESSOURCE
+     * ===================================================== */
     public Ressource modifierRessource(
             Long id,
             String titre,
@@ -115,12 +123,11 @@ public class RessourceService {
         r.setTypeRessource(typeRessource);
         r.setCategorie(categorie);
 
-        // 📸 Upload si nouvelle image
+        // 📸 Nouvelle couverture ?
         if (couvertureFile != null && !couvertureFile.isEmpty()) {
 
             String ext = couvertureFile.getOriginalFilename()
                     .substring(couvertureFile.getOriginalFilename().lastIndexOf("."));
-
             String fileName = "cover_" + System.currentTimeMillis() + ext;
 
             Path dir = Paths.get("uploads/covers");
@@ -135,15 +142,13 @@ public class RessourceService {
             r.setCheminCouverture(fileName);
         }
 
-        // 🔥 Mise à jour du stock
+        // Mise à jour du stock
         StockBibliotheque stock = getStock(r);
 
-        int ancienneTotale = stock.getQuantiteTotale();
         int emprunte = stock.getQuantiteEmpruntee();
         int reserve = stock.getQuantiteReservee();
 
         stock.setQuantiteTotale(quantiteTotale);
-
         int nouvelleDispo = quantiteTotale - emprunte - reserve;
         stock.setQuantiteDisponible(Math.max(nouvelleDispo, 0));
 
@@ -151,22 +156,29 @@ public class RessourceService {
 
         return ressourceRepo.save(r);
     }
-    
+
+    /* =====================================================
+     * 6️⃣ SUPPRESSION D’UNE RESSOURCE
+     * ===================================================== */
     public void supprimerRessource(Long id, Utilisateur bibliothecaire) {
 
         Ressource r = getById(id);
 
-        // Vérification : le bibliothécaire supprime uniquement dans sa propre bibliothèque
-        if (!r.getBibliotheque().getId().equals(bibliothecaire.getBibliotheque().getId())) {
+        if (!r.getBibliotheque().getId()
+                .equals(bibliothecaire.getBibliotheque().getId())) {
             throw new RuntimeException("Vous ne pouvez supprimer que les ressources de votre bibliothèque.");
         }
 
-        // Supprimer le stock associé
         StockBibliotheque stock = getStock(r);
         stockRepo.delete(stock);
 
-        // Supprimer la ressource
         ressourceRepo.delete(r);
     }
 
+    /* =====================================================
+     * 7️⃣ LISTE PAR BIBLIOTHÈQUE
+     * ===================================================== */
+    public List<Ressource> listByBibliotheque(Bibliotheque bibliotheque) {
+        return ressourceRepo.findByBibliotheque(bibliotheque);
+    }
 }

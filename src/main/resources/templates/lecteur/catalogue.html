@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Catalogue</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+
+   
+</head>
+
+<body>
+
+<div th:replace="layout/header :: header"></div>
+<div th:replace="layout/sidebar :: sidebar"></div>
+
+<main class="content">
+<div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <h2>📚 Catalogue complet</h2>
+    <p class="text-muted">Toutes les ressources disponibles dans les bibliothèques</p>
+
+    <div class="catalogue-grid">
+
+        <div class="book-card"
+             th:each="r : ${ressources}"
+             th:with="s=${stocks[r.id]}">
+
+            <!-- Image de couverture -->
+            <div class="book-img">
+                <span class="badge-stock"
+                      th:text="${s.quantiteDisponible + '/' + s.quantiteTotale}">
+                </span>
+
+                <img th:if="${r.cheminCouverture != null}"
+                     th:src="@{'/uploads/covers/' + ${r.cheminCouverture}}">
+
+                <img th:if="${r.cheminCouverture == null}"
+                     src="https://via.placeholder.com/300x180?text=Couverture">
+            </div>
+
+            <!-- Contenu -->
+            <div class="book-body">
+                <h3 th:text="${r.titre}" style="margin-bottom:4px;"></h3>
+                <p th:text="${r.auteur}" style="color:#333;"></p>
+
+                <div class="info-box">
+                    <strong>Catégorie :</strong>
+                    <span th:text="${r.categorie}"></span><br>
+
+                    <strong>Type :</strong>
+                    <span th:text="${r.typeRessource}"></span><br>
+
+                    <strong>Bibliothèque :</strong>
+                    <span th:text="${r.bibliotheque.nom}"></span>
+                </div>
+
+                <!-- Bouton réserver -->
+    <form th:if="${s.quantiteDisponible > 0}"
+      th:action="@{/lecteur/prets/reserver/{id}(id=${r.id})}"
+      method="post">
+    <button type="submit" class="btn-reserver">Réserver</button>
+</form>
+
+
+
+                <button th:if="${s.quantiteDisponible == 0}"
+                        disabled
+                        class="btn-reserver">
+                    Indisponible
+                </button>
+
+            </div>
+        </div>
+
+    </div>
+
+</main>
+
+</body>
+</html>
