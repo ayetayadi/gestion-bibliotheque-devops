@@ -1,23 +1,21 @@
 package com.bibliotheque.gestion_bibliotheque.metier;
 
 import com.bibliotheque.gestion_bibliotheque.dao.UtilisateurRepository;
+import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.Bibliotheque;
 import com.bibliotheque.gestion_bibliotheque.entities.user.Role;
 import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.List;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 
 @Service
 public class UtilisateurService {
@@ -25,102 +23,114 @@ public class UtilisateurService {
     private final UtilisateurRepository utilisateurRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UtilisateurService(UtilisateurRepository utilisateurRepository,
-                              PasswordEncoder passwordEncoder) {
+    public UtilisateurService(
+            UtilisateurRepository utilisateurRepository,
+            PasswordEncoder passwordEncoder
+    ) {
         this.utilisateurRepository = utilisateurRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
+    // ================= UTIL =================
     public Utilisateur getByEmail(String email) {
-    return utilisateurRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
-}
-    // ================= LECTEUR =================
-    public void registerLecteur(Utilisateur utilisateur) {
-
-        if (utilisateurRepository.findByEmail(utilisateur.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Email déjà utilisé");
-        }
-
-        utilisateur.setMotDePasse(passwordEncoder.encode(utilisateur.getMotDePasse()));
-        utilisateur.setRole(Role.LECTEUR);
-        utilisateur.setActif(true);
-
-        utilisateurRepository.save(utilisateur);
+        return utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
     }
 
-    // ================= AJOUT ADMIN =================
-  public void creerAdministrateur(Utilisateur admin) {
-
-    if (utilisateurRepository.existsByEmail(admin.getEmail())) {
-        throw new IllegalArgumentException("Email déjà utilisé");
-    }
-
-    if (admin.getBibliotheque() == null) {
-        throw new IllegalArgumentException("Bibliothèque obligatoire");
-    }
-
-    admin.setRole(Role.ADMIN);
-    admin.setActif(true);
-    admin.setMotDePasse(passwordEncoder.encode(admin.getMotDePasse()));
-
-    utilisateurRepository.save(admin);
-}
-
-    // ================= LISTE ADMINS =================
-     public Page<Utilisateur> getAdminsPaged(Pageable pageable) {
-        return utilisateurRepository.findByRole(Role.ADMIN, pageable);
-    }
-
-    // ================= GET BY ID =================
     public Utilisateur getById(Long id) {
         return utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
     }
 
-    // ================= UPDATE ADMIN =================
-    public void updateAdmin(Utilisateur adminForm) {
+    public Utilisateur getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return getByEmail(auth.getName());
+    }
 
-    Utilisateur admin = utilisateurRepository.findById(adminForm.getId())
-            .orElseThrow(() -> new RuntimeException("Admin introuvable"));
+    // ================= LECTEUR =================
+    public void registerLecteur(Utilisateur utilisateur) {
 
+        if (utilisateurRepository.existsByEmail(utilisateur.getEmail())) {
+            throw new IllegalArgumentException("Email déjà utilisé");
+        }
 
-    utilisateurRepository.findByEmail(adminForm.getEmail())
-            .ifPresent(existing -> {
-                if (!existing.getId().equals(admin.getId())) {
-                    throw new IllegalArgumentException("Email déjà utilisé");
-                }
-            });
+        utilisateur.setRole(Role.LECTEUR);
+        utilisateur.setActif(true);
+        utilisateur.setMotDePasse(passwordEncoder.encode(utilisateur.getMotDePasse()));
 
-    admin.setNom(adminForm.getNom());
-    admin.setPrenom(adminForm.getPrenom());
-    admin.setEmail(adminForm.getEmail());
-    admin.setActif(adminForm.isActif());
-    admin.setRole(Role.ADMIN);
+        utilisateurRepository.save(utilisateur);
+    }
 
-    // 🆕 BIBLIOTHÈQUE
-    admin.setBibliotheque(adminForm.getBibliotheque());
+    // ================= ADMIN =================
+    public Page<Utilisateur> getAdminsPaged(Pageable pageable) {
+        return utilisateurRepository.findByRole(Role.ADMIN, pageable);
+    }
 
+    public void creerAdministrateur(Utilisateur admin) {
+
+        if (utilisateurRepository.existsByEmail(admin.getEmail())) {
+            throw new IllegalArgumentException("Email déjà utilisé");
+        }
+
+        if (admin.getBibliotheque() == null) {
+            throw new IllegalArgumentException("Bibliothèque obligatoire");
+        }
+
+        admin.setRole(Role.ADMIN);
+        admin.setActif(true);
+        admin.setMotDePasse(passwordEncoder.encode(admin.getMotDePasse()));
+
+        utilisateurRepository.save(admin);
+    }
+
+    public void updateAdmin(Utilisateur form) {
+
+        Utilisateur admin = getById(form.getId());
+
+        utilisateurRepository.findByEmail(form.getEmail())
+                .ifPresent(existing -> {
+                    if (!existing.getId().equals(admin.getId())) {
+                        throw new IllegalArgumentException("Email déjà utilisé");
+                    }
+                });
+
+        admin.setNom(form.getNom());
+        admin.setPrenom(form.getPrenom());
+        admin.setEmail(form.getEmail());
+        admin.setBibliotheque(form.getBibliotheque());
+        admin.setActif(form.isActif());
+        admin.setRole(Role.ADMIN);
+
+        utilisateurRepository.save(admin);
+    }
+
+    public void desactiverAdmin(Long id) {
+        Utilisateur admin = getById(id);
+        admin.setActif(false);
+        utilisateurRepository.save(admin);
+    }
+
+     public void activerAdmin(Long id) {
+
+    Utilisateur admin = getById(id);
+
+    if (admin.getBibliotheque() != null && !admin.getBibliotheque().isActif()) {
+        throw new IllegalStateException(
+            "Impossible d’activer cet administrateur : la bibliothèque associée est désactivée. " +
+            "Veuillez d’abord réactiver la bibliothèque."
+        );
+    }
+
+    admin.setActif(true);
     utilisateurRepository.save(admin);
 }
 
 
-    // ================= DELETE ADMIN =================
-    public void deleteAdmin(Long id) {
-
-        Utilisateur admin = utilisateurRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Admin introuvable"));
-
-        if (admin.getRole() != Role.ADMIN) {
-            throw new RuntimeException("Suppression non autorisée");
-        }
-
-        utilisateurRepository.delete(admin);
-    }
-
-
+    // ================= BIBLIOTHECAIRE =================
     public Utilisateur creerBibliothecaire(Utilisateur bibliothecaire, Utilisateur adminConnecte) {
+
         bibliothecaire.setRole(Role.BIBLIOTHECAIRE);
+        bibliothecaire.setActif(true);
         bibliothecaire.setBibliotheque(adminConnecte.getBibliotheque());
         bibliothecaire.setMotDePasse(passwordEncoder.encode(bibliothecaire.getMotDePasse()));
 
@@ -128,71 +138,109 @@ public class UtilisateurService {
     }
 
     public Page<Utilisateur> getBibliothecairesPaged(
-        Long bibliothequeId,
-        Pageable pageable
-) {
-    return utilisateurRepository.findByBibliothequeId(bibliothequeId, pageable);
-}
+            Long bibliothequeId,
+            Pageable pageable
+    ) {
+        return utilisateurRepository.findByRoleAndBibliothequeId(
+                Role.BIBLIOTHECAIRE,
+                bibliothequeId,
+                pageable
+        );
+    }
 
-// ======================= UPDATE BIBLIOTHECAIRE =======================
+    // ================= UPDATE BIBLIOTHÉCAIRE =================
 public void updateBibliothecaire(Utilisateur form, Utilisateur adminConnecte) {
 
-    Utilisateur biblio = utilisateurRepository.findById(form.getId())
-            .orElseThrow(() -> new RuntimeException("Bibliothécaire introuvable"));
+    Utilisateur biblio = getById(form.getId());
 
-    if (!biblio.getBibliotheque().getId().equals(adminConnecte.getBibliotheque().getId())) {
+    // 🔒 Sécurité : même bibliothèque
+    if (!biblio.getBibliotheque().getId()
+            .equals(adminConnecte.getBibliotheque().getId())) {
         throw new RuntimeException("Accès interdit");
     }
 
+    // 🔥 Email unique
+    utilisateurRepository.findByEmail(form.getEmail())
+            .ifPresent(existing -> {
+                if (!existing.getId().equals(biblio.getId())) {
+                    throw new IllegalArgumentException("Email déjà utilisé");
+                }
+            });
+
+    // ✏️ Mise à jour autorisée
     biblio.setNom(form.getNom());
     biblio.setPrenom(form.getPrenom());
     biblio.setEmail(form.getEmail());
     biblio.setActif(form.isActif());
-
     utilisateurRepository.save(biblio);
 }
 
-// ======================= DESACTIVATION =======================
-public void desactiverBibliothecaire(Long id, Utilisateur adminConnecte) {
+    public void desactiverBibliothecaire(Long id, Utilisateur adminConnecte) {
 
-    Utilisateur biblio = utilisateurRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Bibliothécaire introuvable"));
+        Utilisateur biblio = getById(id);
 
-    if (!biblio.getBibliotheque().getId().equals(adminConnecte.getBibliotheque().getId())) {
+        if (!biblio.getBibliotheque().getId()
+                .equals(adminConnecte.getBibliotheque().getId())) {
+            throw new RuntimeException("Accès interdit");
+        }
+
+        biblio.setActif(false);
+        utilisateurRepository.save(biblio);
+    }
+
+   public void activerBibliothecaire(Long id, Utilisateur adminConnecte) {
+
+    Utilisateur biblio = getById(id);
+
+    // 🔒 Sécurité : même bibliothèque
+    if (!biblio.getBibliotheque().getId()
+            .equals(adminConnecte.getBibliotheque().getId())) {
         throw new RuntimeException("Accès interdit");
     }
 
-    biblio.setActif(false);
+    // 🔥 RÈGLE MÉTIER
+    if (!biblio.getBibliotheque().isActif()) {
+        throw new IllegalStateException(
+            "Impossible d’activer ce bibliothécaire : la bibliothèque est désactivée."
+        );
+    }
 
+    biblio.setActif(true);
     utilisateurRepository.save(biblio);
 }
 
+    public void desactiverUtilisateursDeBibliotheque(Bibliotheque bibliotheque) {
+
+    utilisateurRepository.findByBibliothequeId(bibliotheque.getId())
+            .forEach(u -> {
+                u.setActif(false);
+                utilisateurRepository.save(u);
+            });
+        }
+
+    public void activerUtilisateursDeBibliotheque(Bibliotheque bibliotheque) {
+
+    utilisateurRepository.findByBibliothequeId(bibliotheque.getId())
+            .forEach(u -> {
+                u.setActif(true);
+                utilisateurRepository.save(u);
+            });
+        }
 
 
-
-    // ================= UPDATE PROFIL + PHOTO =================
+    // ================= PROFIL =================
     public void updateProfile(
             String currentEmail,
             Utilisateur form,
             MultipartFile photoFile
     ) throws Exception {
 
-        Utilisateur user = utilisateurRepository.findByEmail(currentEmail)
-                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
-
-        // 🔥 email unique
-        utilisateurRepository.findByEmail(form.getEmail())
-                .ifPresent(existing -> {
-                    if (!existing.getId().equals(user.getId())) {
-                        throw new IllegalArgumentException("Email déjà utilisé");
-                    }
-                });
+        Utilisateur user = getByEmail(currentEmail);
 
         user.setNom(form.getNom());
         user.setPrenom(form.getPrenom());
         user.setEmail(form.getEmail());
 
-        // 📸 PHOTO
         if (photoFile != null && !photoFile.isEmpty()) {
 
             String extension = photoFile.getOriginalFilename()
@@ -214,12 +262,4 @@ public void desactiverBibliothecaire(Long id, Utilisateur adminConnecte) {
 
         utilisateurRepository.save(user);
     }
-    public Utilisateur getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName();
-        return utilisateurRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
-    }
-    
-    
 }

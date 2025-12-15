@@ -1,11 +1,7 @@
 package com.bibliotheque.gestion_bibliotheque.web.superadmin;
 
-import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.Adresse;
 import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.Bibliotheque;
 import com.bibliotheque.gestion_bibliotheque.metier.BibliothequeService;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,116 +19,81 @@ public class SuperAdminBibliothequeController {
         this.bibliothequeService = bibliothequeService;
     }
 
-    
-    // ============================= LISTE AVEC PAGINATION =============================
+    // ================= LISTE =================
     @GetMapping
-public String list(
-        @RequestParam(defaultValue = "0") int page,
-        Model model
-) {
-
-    if (page < 0) page = 0;
-
-    System.out.println(">>> Requête page = " + page);
-
-    Page<Bibliotheque> result =
-            bibliothequeService.getAllPaged(PageRequest.of(page, 5));
-
-    System.out.println(">>> Total bibliothèques = " + result.getTotalElements());
-    System.out.println(">>> Total pages = " + result.getTotalPages());
-    System.out.println(">>> Page courante = " + result.getNumber());
-    System.out.println(">>> Nombre d'éléments dans cette page = " + result.getNumberOfElements());
-
-    model.addAttribute("items", result.getContent());
-    model.addAttribute("page", result);
-
-    return "bibliotheque/list";
-}
-
-
-
-    // ============================= FORM AJOUT =============================
-    @GetMapping("/add")
-    public String createForm(Model model) {
-        Bibliotheque b = new Bibliotheque();
-        b.setAdresse(new Adresse()); // éviter NPE dans Thymeleaf
-
-        model.addAttribute("bibliotheque", b);
-        return "bibliotheque/form";
+    public String list(Model model) {
+        model.addAttribute("bibliotheques", bibliothequeService.getAll());
+        return "bibliotheque/list";
     }
 
-
-    // ============================= SAVE NEW =============================
-    @PostMapping
-    public String save(
-            @ModelAttribute Bibliotheque bibliotheque,
-            RedirectAttributes redirectAttributes
-    ) {
-        try {
-            bibliothequeService.creerBibliotheque(bibliotheque);
-            redirectAttributes.addFlashAttribute("success", "Bibliothèque créée avec succès");
-
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-        }
-
-        return "redirect:/super-admin/bibliotheques";
-    }
-
-
-    // ============================= DETAILS =============================
+    // ================= VIEW =================
     @GetMapping("/{id}")
-    public String details(@PathVariable Long id, Model model) {
-
+    public String view(@PathVariable Long id, Model model) {
         model.addAttribute("bibliotheque", bibliothequeService.getById(id));
-
         return "bibliotheque/details";
     }
 
-
-    // ============================= FORM EDIT =============================
-    @GetMapping("/edit/{id}")
-    public String editForm(@PathVariable Long id, Model model) {
-
-        Bibliotheque b = bibliothequeService.getById(id);
-
-        if (b.getAdresse() == null) {
-            b.setAdresse(new Adresse());
-        }
-
-        model.addAttribute("bibliotheque", b);
-
+    // ================= ADD =================
+    @GetMapping("/add")
+    public String addForm(Model model) {
+        model.addAttribute("bibliotheque", new Bibliotheque());
         return "bibliotheque/form";
     }
 
+    @PostMapping("/add")
+    public String create(
+            @ModelAttribute Bibliotheque bibliotheque,
+            RedirectAttributes redirectAttributes
+    ) {
+        bibliothequeService.creerBibliotheque(bibliotheque);
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Bibliothèque créée avec succès"
+        );
+        return "redirect:/super-admin/bibliotheques";
+    }
 
-    // ============================= UPDATE =============================
+    // ================= EDIT =================
+    @GetMapping("/edit/{id}")
+    public String edit(@PathVariable Long id, Model model) {
+        model.addAttribute("bibliotheque", bibliothequeService.getById(id));
+        return "bibliotheque/form-edit";
+    }
+
     @PostMapping("/edit")
     public String update(
             @ModelAttribute Bibliotheque bibliotheque,
             RedirectAttributes redirectAttributes
     ) {
-        try {
-            bibliothequeService.update(bibliotheque);
-            redirectAttributes.addFlashAttribute("success", "Bibliothèque modifiée avec succès");
-
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-        }
-
+        bibliothequeService.updateBibliotheque(bibliotheque);
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Bibliothèque modifiée avec succès"
+        );
         return "redirect:/super-admin/bibliotheques";
     }
 
-
-    // ============================= DELETE (SOFT) =============================
-    @GetMapping("/delete/{id}")
-    public String delete(
+    // ================= ACTIVER / DESACTIVER =================
+    @GetMapping("/changer-statut/{id}")
+    public String changerStatut(
             @PathVariable Long id,
             RedirectAttributes redirectAttributes
     ) {
-        bibliothequeService.delete(id);
+        Bibliotheque biblio = bibliothequeService.getById(id);
 
-        redirectAttributes.addFlashAttribute("success", "Bibliothèque désactivée avec succès");
+        if (biblio.isActif()) {
+            bibliothequeService.desactiverBibliotheque(id);
+            redirectAttributes.addFlashAttribute(
+                    "warning",
+                    "Bibliothèque désactivée : tous les administrateurs et bibliothécaires associés ne peuvent plus se connecter."
+            );
+        } else {
+            bibliothequeService.activerBibliotheque(id);
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    "Bibliothèque réactivée : les utilisateurs associés peuvent se reconnecter."
+            );
+        }
 
         return "redirect:/super-admin/bibliotheques";
     }
