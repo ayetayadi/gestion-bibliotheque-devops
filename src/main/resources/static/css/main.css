@@ -645,3 +645,69 @@ body {
     background: #e7e7e7;
 }
      
+     
+     
+     
+     /* ================= CATALOGUE ================= */
+     
+     
+     
+     
+     
+      .catalogue-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
+            gap: 20px;
+        }
+        .book-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: 0.2s;
+            position: relative;
+        }
+        .book-card:hover { transform: translateY(-5px); }
+        .book-img img {
+            width: 100%; height: 180px; object-fit: cover;
+        }
+        .book-body { padding: 15px; }
+
+        .badge-stock {
+            background: #0066ff; 
+            color: white;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .info-box {
+            background: #f7f7f7;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .btn-reserver {
+            background: #07071b; 
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+            padding: 9px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-reserver:hover {
+            background: #111133;
+        }
+        .btn-reserver:disabled {
+            background: grey;
+            cursor: not-allowed;
+        }

@@ -14,6 +14,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
+
 @Component
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
@@ -41,11 +43,14 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             if (jwtUtil.isTokenValid(token)) {
                 String username = jwtUtil.extractUsername(token);
 
-                var userDetails = userDetailsService.loadUserByUsername(username);
+                UserDetailsImpl userDetails =
+                        (UserDetailsImpl) userDetailsService.loadUserByUsername(username);
+
+                Utilisateur utilisateur = userDetails.getUtilisateur();
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
-                                userDetails,
+                                utilisateur,   // 🔥 Le principal = ton entité Utilisateur
                                 null,
                                 userDetails.getAuthorities()
                         );

@@ -9,19 +9,14 @@ import org.springframework.data.repository.query.Param;
 import com.bibliotheque.gestion_bibliotheque.entities.pret.Pret;
 import com.bibliotheque.gestion_bibliotheque.entities.pret.StatutPret;
 import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.Bibliotheque;
-import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
+import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;  // ⭐ IMPORT MANQUANT
 
 public interface PretRepository extends JpaRepository<Pret, Long> {
 
-    /* ===============================
-     * PRÊTS D’UN LECTEUR
-     * =============================== */
+    // 📌 Tous les prêts / réservations d'un lecteur
     List<Pret> findByLecteur(Utilisateur lecteur);
 
-    /* ===============================
-     * PRÊTS À GÉRER PAR BIBLIOTHÈQUE
-     * (RESERVE, EN_COURS, RETOURNE)
-     * =============================== */
+    // 📌 Pour bibliothécaire : prêts à gérer
     @Query("""
         SELECT p
         FROM Pret p
@@ -32,9 +27,4 @@ public interface PretRepository extends JpaRepository<Pret, Long> {
             @Param("bibliotheque") Bibliotheque bibliotheque,
             @Param("statuts") List<StatutPret> statuts
     );
-
-    /* ===============================
-     * HISTORIQUE (ADMIN)
-     * =============================== */
-    List<Pret> findByStatut(StatutPret statut);
 }

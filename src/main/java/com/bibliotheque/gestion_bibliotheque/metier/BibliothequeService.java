@@ -19,24 +19,32 @@ public class BibliothequeService {
     // ================= CREATE =================
     public Bibliotheque creerBibliotheque(Bibliotheque bibliotheque) {
 
-    if (bibliothequeRepository.existsByCode(bibliotheque.getCode())) {
-        throw new IllegalArgumentException(
-            "Le code de la bibliothèque existe déjà"
-        );
+        if (bibliothequeRepository.existsByCode(bibliotheque.getCode())) {
+            throw new IllegalArgumentException(
+                "Le code de la bibliothèque existe déjà"
+            );
+        }
+
+        bibliotheque.setActif(true);
+        return bibliothequeRepository.save(bibliotheque);
     }
 
-    bibliotheque.setActif(true);
-    return bibliothequeRepository.save(bibliotheque);
-}
-
+    // ================= READ PAGINÉ =================
     public Page<Bibliotheque> getAllPaged(Pageable pageable) {
-    return bibliothequeRepository.findAll(pageable);
-}
+        return bibliothequeRepository.findAll(pageable);
+    }
 
-public List<Bibliotheque> getAll() {
-    return bibliothequeRepository.findAll();
-}
-    // ================= READ (SINGLE) =================
+    // ================= READ SIMPLE (utilisé par SuperAdmin) =================
+    public List<Bibliotheque> getAll() {
+        return bibliothequeRepository.findAll();
+    }
+
+    // Alias (si tu veux garder listAll)
+    public List<Bibliotheque> listAll() {
+        return bibliothequeRepository.findAll();
+    }
+
+    // ================= READ BY ID =================
     public Bibliotheque getById(Long id) {
         return bibliothequeRepository.findById(id)
                 .orElseThrow(() ->
@@ -45,6 +53,7 @@ public List<Bibliotheque> getAll() {
 
     // ================= UPDATE =================
     public Bibliotheque update(Bibliotheque updated) {
+
         Bibliotheque existing = getById(updated.getId());
 
         existing.setNom(updated.getNom());
@@ -54,7 +63,7 @@ public List<Bibliotheque> getAll() {
         return bibliothequeRepository.save(existing);
     }
 
-    // ================= DELETE (SOFT) =================
+    // ================= DELETE (soft delete) =================
     public void delete(Long id) {
         Bibliotheque b = getById(id);
         b.setActif(false);
