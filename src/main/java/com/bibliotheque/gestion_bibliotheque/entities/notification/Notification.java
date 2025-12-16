@@ -4,11 +4,15 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 
 @Entity
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Notification {
 
     @Id

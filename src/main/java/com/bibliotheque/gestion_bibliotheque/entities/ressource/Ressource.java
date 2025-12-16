@@ -2,7 +2,9 @@ package com.bibliotheque.gestion_bibliotheque.entities.ressource;
 
 import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.Bibliotheque;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 @Entity
@@ -14,6 +16,8 @@ import java.time.LocalDate;
 )
 @DiscriminatorValue("GENERIC")       
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Ressource {
 
     @Id

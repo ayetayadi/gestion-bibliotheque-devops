@@ -2,7 +2,9 @@ package com.bibliotheque.gestion_bibliotheque.entities.bibliotheque;
 
 import com.bibliotheque.gestion_bibliotheque.entities.ressource.Ressource;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
@@ -12,6 +14,8 @@ import lombok.Data;
         @UniqueConstraint(columnNames = {"bibliotheque_id", "ressource_id"})
     }
 )
+@AllArgsConstructor
+@NoArgsConstructor
 public class StockBibliotheque {
 
     @Id

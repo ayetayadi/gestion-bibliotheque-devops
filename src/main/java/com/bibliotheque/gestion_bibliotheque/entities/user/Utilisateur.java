@@ -1,6 +1,7 @@
 package com.bibliotheque.gestion_bibliotheque.entities.user;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,7 @@ import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.Bibliotheque;
 @Entity
 @Table(name = "utilisateur")
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 public class Utilisateur {
 

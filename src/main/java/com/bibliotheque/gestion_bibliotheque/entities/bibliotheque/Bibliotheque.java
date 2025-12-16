@@ -2,6 +2,7 @@ package com.bibliotheque.gestion_bibliotheque.entities.bibliotheque;
 
 import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +11,7 @@ import java.util.List;
 @Entity
 @Table(name = "bibliotheque")
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 public class Bibliotheque {
 
