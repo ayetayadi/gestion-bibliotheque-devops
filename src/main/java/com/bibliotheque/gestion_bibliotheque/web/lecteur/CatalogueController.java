@@ -1,5 +1,7 @@
 package com.bibliotheque.gestion_bibliotheque.web.lecteur;
 
+import java.util.*;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -16,8 +18,6 @@ import com.bibliotheque.gestion_bibliotheque.security.UserDetailsImpl;
 
 import lombok.RequiredArgsConstructor;
 
-import java.util.*;
-
 @Controller
 @RequestMapping("/catalogue")
 @RequiredArgsConstructor
@@ -28,23 +28,16 @@ public class CatalogueController {
     private final BibliothequeService bibliothequeService;
 
     @GetMapping
-    public String catalogue(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam(required = false) Long biblioId,
-            Model model) {
-
-        if (userDetails == null) return "redirect:/login";
+    public String catalogue(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                            @RequestParam(required = false) Long biblioId,
+                            Model model) {
 
         Utilisateur lecteur = userDetails.getUtilisateur();
 
-        List<Ressource> ressources;
-
-        if (biblioId != null) {
-            Bibliotheque b = bibliothequeService.getById(biblioId);
-            ressources = ressourceService.listByBibliotheque(b);
-        } else {
-            ressources = ressourceService.listAll();
-        }
+        List<Ressource> ressources =
+                (biblioId != null)
+                        ? ressourceService.listByBibliotheque(bibliothequeService.getById(biblioId))
+                        : ressourceService.listAll();
 
         Map<Long, StockBibliotheque> stocks = new HashMap<>();
         for (Ressource r : ressources) {

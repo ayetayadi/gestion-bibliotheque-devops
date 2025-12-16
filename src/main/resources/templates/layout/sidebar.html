@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
 
 <aside th:fragment="sidebar" id="sidebar" class="sidebar">
@@ -8,14 +9,14 @@
 
         <!-- ================= COMMUN ================= -->
         <a th:href="@{/dashboard}" class="menu-item">🏠 Accueil</a>
-<a th:href="@{/catalogue}" class="menu-item">📚 Catalogue</a>
+        <a th:href="@{/catalogue}" class="menu-item">📚 Catalogue</a>
 
         <a th:href="@{/profile}" class="menu-item">
             👤 Mon profil
         </a>
 
         <!-- ================= SUPER ADMIN ================= -->
-        <div th:if="${#authorization.expression('hasRole(''SUPER_ADMIN'')')}">
+        <div sec:authorize="hasRole('SUPER_ADMIN')">
 
             <div class="menu-section">Administration globale</div>
 
@@ -28,10 +29,15 @@
             </a>
         </div>
 
-        <!-- ================= ADMIN ================= -->
-        <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+        <!-- ================= ADMINISTRATEUR ================= -->
+        <div sec:authorize="hasRole('ADMIN')">
 
-            <div class="menu-section">Administration locale</div>
+            <div class="menu-section">Administration</div>
+
+            <!-- ✅ Dashboard ADMIN -->
+            <a th:href="@{/admin/dashboard}" class="menu-item">
+                📊 Dashboard
+            </a>
 
             <a th:href="@{/admin/bibliothecaires}" class="menu-item">
                 👨‍🏫 Bibliothécaires
@@ -43,7 +49,7 @@
         </div>
 
         <!-- ================= BIBLIOTHÉCAIRE ================= -->
-        <div th:if="${#authorization.expression('hasRole(''BIBLIOTHECAIRE'')')}">
+        <div sec:authorize="hasRole('BIBLIOTHECAIRE')">
 
             <div class="menu-section">Gestion bibliothèque</div>
 
@@ -57,26 +63,14 @@
         </div>
 
         <!-- ================= LECTEUR ================= -->
-        <div th:if="${#authorization.expression('hasRole(''LECTEUR'')')}">
+        <div sec:authorize="hasRole('LECTEUR')">
 
             <div class="menu-section">Mon espace</div>
 
-<a th:href="@{/lecteur/prets}" class="menu-item">
-                📖 Mes prêts
+            <a th:href="@{/lecteur/prets}" class="menu-item">
+                📖 Mes prêts & réservations
             </a>
         </div>
-        
-<div th:if="${#authorization.expression('hasRole(''LECTEUR'')')}">
-
-    <div class="menu-section">Mon espace</div>
-
-    <a th:href="@{/catalogue}" class="menu-item">📚 Catalogue</a>
-
-    <a th:href="@{/lecteur/prets}" class="menu-item">
-        📖 Mes prêts & réservations
-    </a>
-</div>
-        
 
     </nav>
 </aside>

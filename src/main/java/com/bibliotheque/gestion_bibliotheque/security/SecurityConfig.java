@@ -16,12 +16,12 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-            // ❗ Désactivation CSRF car tu n'utilises pas de token
+            // ⚠️ CSRF désactivé (acceptable pour projet académique)
             .csrf(csrf -> csrf.disable())
 
             .authorizeHttpRequests(auth -> auth
 
-                // 🌍 PUBLIC
+                // ================= PUBLIC =================
                 .requestMatchers(
                         "/",
                         "/login",
@@ -31,27 +31,27 @@ public class SecurityConfig {
                         "/images/**"
                 ).permitAll()
 
-                // 📚 LECTEUR — accès GET + POST
+                // ================= LECTEUR =================
                 .requestMatchers("/catalogue/**").hasRole("LECTEUR")
                 .requestMatchers("/lecteur/**").hasRole("LECTEUR")
 
-                // 👨‍🏫 BIBLIOTHÉCAIRE
+                // ================= BIBLIOTHÉCAIRE =================
                 .requestMatchers("/bibliothecaire/**").hasRole("BIBLIOTHECAIRE")
 
-                // 🧑‍💼 ADMIN
+                // ================= ADMINISTRATEUR =================
                 .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                // 👑 SUPER ADMIN
+                // ================= SUPER ADMIN =================
                 .requestMatchers("/super-admin/**").hasRole("SUPER_ADMIN")
 
-                // 🔐 Tout le reste nécessite une authentification
+                // ================= AUTRES =================
                 .anyRequest().authenticated()
             )
 
-            // 🔑 FORM LOGIN
+            // ================= LOGIN =================
             .formLogin(form -> form
                     .loginPage("/login")
-                    .loginProcessingUrl("/login") // route POST
+                    .loginProcessingUrl("/login")
                     .usernameParameter("email")
                     .passwordParameter("password")
                     .defaultSuccessUrl("/dashboard", true)
@@ -59,7 +59,7 @@ public class SecurityConfig {
                     .permitAll()
             )
 
-            // 🚪 LOGOUT
+            // ================= LOGOUT =================
             .logout(logout -> logout
                     .logoutUrl("/logout")
                     .logoutSuccessUrl("/login?logout=true")
@@ -69,6 +69,7 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // ================= PASSWORD ENCODER =================
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
