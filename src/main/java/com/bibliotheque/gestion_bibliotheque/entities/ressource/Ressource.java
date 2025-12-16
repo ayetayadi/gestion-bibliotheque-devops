@@ -2,8 +2,7 @@ package com.bibliotheque.gestion_bibliotheque.entities.ressource;
 
 import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.Bibliotheque;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.time.LocalDate;
 @Entity
@@ -14,7 +13,7 @@ import java.time.LocalDate;
         discriminatorType = DiscriminatorType.STRING
 )
 @DiscriminatorValue("GENERIC")       
-@Getter @Setter
+@Data
 public class Ressource {
 
     @Id

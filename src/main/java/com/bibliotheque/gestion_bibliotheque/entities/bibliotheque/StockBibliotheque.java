@@ -2,12 +2,10 @@ package com.bibliotheque.gestion_bibliotheque.entities.bibliotheque;
 
 import com.bibliotheque.gestion_bibliotheque.entities.ressource.Ressource;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 @Entity
-@Getter
-@Setter
+@Data
 @Table(
     name = "stock_bibliotheque",
     uniqueConstraints = {

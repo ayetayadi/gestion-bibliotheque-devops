@@ -3,12 +3,12 @@ package com.bibliotheque.gestion_bibliotheque.entities.notification;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
-import lombok.Getter;
-import lombok.Setter;
+
+import lombok.Data;
+
 
 @Entity
-@Getter
-@Setter
+@Data
 public class Notification {
 
     @Id

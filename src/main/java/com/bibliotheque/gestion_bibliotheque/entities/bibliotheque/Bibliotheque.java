@@ -2,16 +2,14 @@ package com.bibliotheque.gestion_bibliotheque.entities.bibliotheque;
 
 import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.List;
 
 @Entity
 @Table(name = "bibliotheque")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 public class Bibliotheque {
 

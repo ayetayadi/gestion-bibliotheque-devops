@@ -1,14 +1,12 @@
 package com.bibliotheque.gestion_bibliotheque.entities.bibliotheque;
 
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "adresse")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 public class Adresse {
 

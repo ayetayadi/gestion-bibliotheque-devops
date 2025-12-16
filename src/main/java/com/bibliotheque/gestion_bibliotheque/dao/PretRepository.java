@@ -36,9 +36,6 @@ Page<Pret> findPretsByBibliothequeAndStatuts(
         Pageable pageable
 );
 
-
-    List<Pret> findByLecteur(Utilisateur lecteur);
-
     @Query("""
         SELECT p.ressource.categorie, COUNT(p)
         FROM Pret p
@@ -75,10 +72,7 @@ Page<Pret> searchPrets(
         Pageable pageable
 );
        
-    List<Pret> findPretsByBibliothequeAndStatuts(
-            @Param("bibliotheque") Bibliotheque bibliotheque,
-            @Param("statuts") List<StatutPret> statuts
-    );
+
 
     // ======================
     // ADMIN – KPI
