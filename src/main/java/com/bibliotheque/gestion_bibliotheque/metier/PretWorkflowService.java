@@ -210,7 +210,7 @@ log.info("After reservation: disponible={}, reservee={}",
         mailSender.send(message);
     }
 
-    public Page<Pret> searchPretsBibliotheque(
+  public Page<Pret> searchPretsBibliotheque(
         Long biblioId,
         String keyword,
         String statut,
@@ -221,14 +221,28 @@ log.info("After reservation: disponible={}, reservee={}",
     if (keyword != null && keyword.isBlank()) keyword = null;
     if (statut != null && statut.isBlank()) statut = null;
 
+    // Conversion String -> LocalDateTime
+    LocalDateTime dateMin = null;
+    LocalDateTime dateMax = null;
+
+    try {
+        if (dateDebut != null && !dateDebut.isBlank()) {
+            dateMin = LocalDateTime.parse(dateDebut);
+        }
+        if (dateFin != null && !dateFin.isBlank()) {
+            dateMax = LocalDateTime.parse(dateFin);
+        }
+    } catch (Exception e) {
+        throw new IllegalArgumentException("Format de date invalide. Attendu : yyyy-MM-ddTHH:mm");
+    }
+
     return pretRepository.searchPrets(
             biblioId,
             keyword,
             statut != null ? StatutPret.valueOf(statut) : null,
-            dateDebut,
-            dateFin,
+            dateMin,
+            dateMax,
             pageable
     );
 }
-
 }
