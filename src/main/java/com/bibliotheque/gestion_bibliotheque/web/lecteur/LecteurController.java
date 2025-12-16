@@ -30,68 +30,64 @@ public class LecteurController {
     private final RessourceService ressourceService;
 
     // 1️⃣ Réserver une ressource
-@PostMapping("/prets/reserver/{id}")
-public String reserver(@PathVariable Long id,
-                       @AuthenticationPrincipal UserDetailsImpl userDetails,
-                       RedirectAttributes redirectAttrs) {
-
-    if (userDetails == null) return "redirect:/login";
-
-    Utilisateur lecteur = userDetails.getUtilisateur();
-
-    try {
-        Ressource res = ressourceService.getById(id);
-        StockBibliotheque stock = ressourceService.getStock(res);
-
-        pretWorkflowService.reserverRessource(lecteur, res, stock);
-
-        redirectAttrs.addFlashAttribute("success", "Réservation effectuée !");
-    } catch (Exception e) {
-        redirectAttrs.addFlashAttribute("error", e.getMessage());
-    }
-
-    return "redirect:/catalogue";
-}
-
-    // 2️⃣ Afficher mes prêts (exclure les réservations annulées)
-@GetMapping("/prets")
-public String mesPrets(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @RequestParam(defaultValue = "0") int page,
-        Model model) {
-
-    if (userDetails == null) return "redirect:/login";
-
-    Utilisateur lecteur = userDetails.getUtilisateur();
-
-    // Page = 6 éléments par page
-    var pageable = PageRequest.of(page, 6);
-
-    var pretsPage = pretRepository.findByLecteur(lecteur, pageable);
-
-    // Exclure ANNULE
-    var filteredPage = pretsPage.map(p -> p)
-            .filter(p -> p.getStatut() != StatutPret.ANNULE);
-
-    model.addAttribute("page", pretsPage);
-    model.addAttribute("prets", pretsPage.getContent());
-    model.addAttribute("baseUrl", "/lecteur/prets");
-
-    return "lecteur/mes-prets";
-}
-
-    // 3️⃣ Annuler une réservation
-    @PostMapping("/prets/annuler/{id}")
-    public String annulerReservation(@PathVariable Long id,
-                                     @AuthenticationPrincipal UserDetailsImpl userDetails,
-                                     RedirectAttributes redirectAttrs) {
-
-        if (userDetails == null) return "redirect:/login";
+    @PostMapping("/prets/reserver/{id}")
+    public String reserver(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            RedirectAttributes redirectAttrs) {
 
         Utilisateur lecteur = userDetails.getUtilisateur();
 
         try {
-            pretWorkflowService.annulerReservation(id, lecteur);
+            Ressource res = ressourceService.getById(id);
+            StockBibliotheque stock = ressourceService.getStock(res);
+
+            pretWorkflowService.reserverRessource(lecteur, res, stock);
+            redirectAttrs.addFlashAttribute("success", "Réservation effectuée !");
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/catalogue";
+    }
+
+    // 2️⃣ Afficher mes prêts
+    @GetMapping("/prets")
+    public String mesPrets(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            Model model) {
+
+        if (userDetails == null) {
+            return "redirect:/login";
+        }
+
+        Utilisateur lecteur = userDetails.getUtilisateur();
+        var pageable = PageRequest.of(page, 6);
+
+        var pretsPage = pretRepository.findByLecteur(lecteur, pageable);
+
+        // Exclure ANNULE correctement
+        var filtered = pretsPage.stream()
+                .filter(p -> p.getStatut() != StatutPret.ANNULE)
+                .toList();
+
+        model.addAttribute("page", pretsPage);
+        model.addAttribute("prets", filtered);
+        model.addAttribute("baseUrl", "/lecteur/prets");
+
+        return "lecteur/mes-prets";
+    }
+
+    // 3️⃣ Annuler une réservation
+    @PostMapping("/prets/annuler/{id}")
+    public String annulerReservation(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            RedirectAttributes redirectAttrs) {
+
+        try {
+            pretWorkflowService.annulerReservation(id, userDetails.getUtilisateur());
             redirectAttrs.addFlashAttribute("success", "Réservation annulée.");
         } catch (Exception e) {
             redirectAttrs.addFlashAttribute("error", e.getMessage());
@@ -100,18 +96,15 @@ public String mesPrets(
         return "redirect:/lecteur/prets";
     }
 
-    // 4️⃣ Retourner une ressource (mettre à jour date de retour)
+    // 4️⃣ Retourner une ressource
     @PostMapping("/prets/retourner/{id}")
-    public String retournerPret(@PathVariable Long id,
-                                @AuthenticationPrincipal UserDetailsImpl userDetails,
-                                RedirectAttributes redirectAttrs) {
-
-        if (userDetails == null) return "redirect:/login";
-
-        Utilisateur lecteur = userDetails.getUtilisateur();
+    public String retournerPret(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            RedirectAttributes redirectAttrs) {
 
         try {
-            pretWorkflowService.retournerPret(id, lecteur);
+            pretWorkflowService.retournerPret(id, userDetails.getUtilisateur());
             redirectAttrs.addFlashAttribute("success", "Ressource retournée !");
         } catch (Exception e) {
             redirectAttrs.addFlashAttribute("error", e.getMessage());

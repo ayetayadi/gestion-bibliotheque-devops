@@ -1,6 +1,11 @@
 package com.bibliotheque.gestion_bibliotheque.web.lecteur;
 
+
 import org.springframework.data.domain.PageRequest;
+
+import java.util.*;
+
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -17,6 +22,7 @@ import com.bibliotheque.gestion_bibliotheque.security.UserDetailsImpl;
 
 import lombok.RequiredArgsConstructor;
 
+
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,6 +38,7 @@ public class CatalogueController {
         private final PretRepository pretRepo;
         private final UtilisateurService utilisateurService;
 
+
         @GetMapping
         public String catalogue(
                         @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -45,7 +52,9 @@ public class CatalogueController {
                 // CORRECTION MAJEURE : recharger l'utilisateur depuis la DB
                 Utilisateur lecteur = utilisateurService.getByEmail(userDetails.getUsername());
 
+
                 var pageable = PageRequest.of(page, 8);
+
 
                 var pageRessources = ressourceService.searchCatalogue(
                                 keyword, categorie, type, biblioId, pageable);

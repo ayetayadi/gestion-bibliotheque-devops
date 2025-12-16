@@ -24,6 +24,7 @@ public interface PretRepository extends JpaRepository<Pret, Long> {
 """)
 Page<Pret> findByLecteur(@Param("lecteur") Utilisateur lecteur, Pageable pageable);
 
+
    @Query("""
     SELECT p FROM Pret p
     WHERE p.stockBibliotheque.bibliotheque = :bibliotheque
@@ -35,6 +36,9 @@ Page<Pret> findPretsByBibliothequeAndStatuts(
         Pageable pageable
 );
 
+
+    List<Pret> findByLecteur(Utilisateur lecteur);
+
     @Query("""
         SELECT p.ressource.categorie, COUNT(p)
         FROM Pret p
@@ -43,6 +47,7 @@ Page<Pret> findPretsByBibliothequeAndStatuts(
         GROUP BY p.ressource.categorie
         ORDER BY COUNT(p) DESC
     """)
+
     List<Object[]> getTopCategoriesByLecteur(@Param("lecteur") Utilisateur lecteur);
 
 @Query("""
@@ -69,5 +74,49 @@ Page<Pret> searchPrets(
         @Param("dateMax") LocalDateTime dateMax,
         Pageable pageable
 );
+       
+    List<Pret> findPretsByBibliothequeAndStatuts(
+            @Param("bibliotheque") Bibliotheque bibliotheque,
+            @Param("statuts") List<StatutPret> statuts
+    );
+
+    // ======================
+    // ADMIN – KPI
+    // ======================
+
+    // 📊 Prêts actifs
+    @Query("""
+        SELECT COUNT(p)
+        FROM Pret p
+        WHERE p.statut <> 'CLOTURE'
+    """)
+    Long countPretsActifs();
+
+    // 📊 Prêts par catégorie
+    @Query("""
+        SELECT r.categorie, COUNT(p)
+        FROM Pret p
+        JOIN p.ressource r
+        GROUP BY r.categorie
+    """)
+    List<Object[]> countPretsParCategorie();
+
+    // 📊 Prêts par bibliothèque
+    @Query("""
+        SELECT b.nom, COUNT(p)
+        FROM Pret p
+        JOIN p.bibliotheque b
+        GROUP BY b.nom
+    """)
+    List<Object[]> countPretsParBibliotheque();
+
+    // 📊 Activité des utilisateurs
+    @Query("""
+        SELECT u.email, COUNT(p)
+        FROM Pret p
+        JOIN p.lecteur u
+        GROUP BY u.email
+    """)
+    List<Object[]> countPretsParUtilisateur();
 
 }

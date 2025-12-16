@@ -1,8 +1,10 @@
 package com.bibliotheque.gestion_bibliotheque.dao;
 
 import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.Bibliotheque;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +15,7 @@ import org.springframework.data.repository.query.Param;
 public interface BibliothequeRepository extends JpaRepository<Bibliotheque, Long> {
 
     boolean existsByCode(String code);
+
     List<Bibliotheque> findByActifTrue();
 
     @Query("""
@@ -28,5 +31,9 @@ Page<Bibliotheque> search(
         @Param("actif") Boolean actif,
         Pageable pageable
 );
+
+    long countByActifTrue();
+
+    long countByActifFalse();
 
 }

@@ -16,9 +16,11 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
+
             .csrf(csrf -> csrf.disable())
 
             .authorizeHttpRequests(auth -> auth
+
 
                 .requestMatchers(
                     "/",
@@ -29,27 +31,37 @@ public class SecurityConfig {
                     "/images/**"
                 ).permitAll()
 
-                .requestMatchers("/bibliothecaire/**")
-                    .hasRole("BIBLIOTHECAIRE")
 
-                .requestMatchers("/admin/**")
-                    .hasRole("ADMIN")
+                // ================= LECTEUR =================
+                .requestMatchers("/catalogue/**").hasRole("LECTEUR")
+                .requestMatchers("/lecteur/**").hasRole("LECTEUR")
 
-                .requestMatchers("/super-admin/**")
-                    .hasRole("SUPER_ADMIN")
+                // ================= BIBLIOTHÉCAIRE =================
+                .requestMatchers("/bibliothecaire/**").hasRole("BIBLIOTHECAIRE")
 
+                // ================= ADMINISTRATEUR =================
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                // ================= SUPER ADMIN =================
+                .requestMatchers("/super-admin/**").hasRole("SUPER_ADMIN")
+
+                // ================= AUTRES =================
                 .anyRequest().authenticated()
             )
 
+            // ================= LOGIN =================
             .formLogin(form -> form
-                .loginPage("/login")
-                .loginProcessingUrl("/login")
-                .usernameParameter("email")
-                .passwordParameter("password")
-                .defaultSuccessUrl("/dashboard", true)
-                .failureUrl("/login?error=true")
-                .permitAll()
+                    .loginPage("/login")
+                    .loginProcessingUrl("/login")
+                    .usernameParameter("email")
+                    .passwordParameter("password")
+                    .defaultSuccessUrl("/dashboard", true)
+                    .failureUrl("/login?error=true")
+                    .permitAll()
             )
+
+            // ================= LOGOUT =================
+
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout=true")
@@ -59,6 +71,7 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // ================= PASSWORD ENCODER =================
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
