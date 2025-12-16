@@ -13,11 +13,14 @@ import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
 
 public interface PretRepository extends JpaRepository<Pret, Long> {
 
-    // 📌 Tous les prêts d’un lecteur
+    // ======================
+    // USAGER
+    // ======================
     List<Pret> findByLecteur(Utilisateur lecteur);
 
-
-    // 📌 Pour bibliothécaire : prêts à gérer
+    // ======================
+    // BIBLIOTHÉCAIRE
+    // ======================
     @Query("""
         SELECT p FROM Pret p
         WHERE p.stockBibliotheque.bibliotheque = :bibliotheque
@@ -27,4 +30,43 @@ public interface PretRepository extends JpaRepository<Pret, Long> {
             @Param("bibliotheque") Bibliotheque bibliotheque,
             @Param("statuts") List<StatutPret> statuts
     );
+
+    // ======================
+    // ADMIN – KPI
+    // ======================
+
+    // 📊 Prêts actifs
+    @Query("""
+        SELECT COUNT(p)
+        FROM Pret p
+        WHERE p.statut <> 'CLOTURE'
+    """)
+    Long countPretsActifs();
+
+    // 📊 Prêts par catégorie
+    @Query("""
+        SELECT r.categorie, COUNT(p)
+        FROM Pret p
+        JOIN p.ressource r
+        GROUP BY r.categorie
+    """)
+    List<Object[]> countPretsParCategorie();
+
+    // 📊 Prêts par bibliothèque
+    @Query("""
+        SELECT b.nom, COUNT(p)
+        FROM Pret p
+        JOIN p.bibliotheque b
+        GROUP BY b.nom
+    """)
+    List<Object[]> countPretsParBibliotheque();
+
+    // 📊 Activité des utilisateurs
+    @Query("""
+        SELECT u.email, COUNT(p)
+        FROM Pret p
+        JOIN p.lecteur u
+        GROUP BY u.email
+    """)
+    List<Object[]> countPretsParUtilisateur();
 }

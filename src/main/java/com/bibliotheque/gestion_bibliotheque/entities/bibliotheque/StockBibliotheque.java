@@ -8,31 +8,41 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
+@Table(
+    name = "stock_bibliotheque",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"bibliotheque_id", "ressource_id"})
+    }
+)
 public class StockBibliotheque {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
+    // 📍 Bibliothèque propriétaire du stock
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "bibliotheque_id")
     private Bibliotheque bibliotheque;
 
-    @ManyToOne(optional = false)
+    // 📚 Ressource concernée
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "ressource_id")
     private Ressource ressource;
 
-    // Quantité totale possédée par la bibliothèque
+    // 📦 Quantité totale possédée
     @Column(nullable = false)
     private int quantiteTotale;
 
-    // Quantité actuellement disponible (non empruntée et non réservée)
+    // ✅ Quantité disponible immédiatement
     @Column(nullable = false)
     private int quantiteDisponible;
 
-    // Quantité actuellement empruntée
+    // 🔄 Quantité actuellement empruntée (UTILISÉE POUR LE TAUX DE ROTATION)
     @Column(nullable = false)
     private int quantiteEmpruntee = 0;
 
-    // Quantité réservée par des utilisateurs
+    // ⏳ Quantité réservée
     @Column(nullable = false)
     private int quantiteReservee = 0;
 }
