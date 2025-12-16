@@ -20,7 +20,7 @@ public class StockBibliotheque {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 📍 Bibliothèque propriétaire du stock
+    // ////📍 Bibliothèque propriétaire du stock
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "bibliotheque_id")
     private Bibliotheque bibliotheque;
