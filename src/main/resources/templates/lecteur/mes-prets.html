@@ -5,10 +5,8 @@
     <meta charset="UTF-8">
     <title>Mes prêts</title>
 
-    <!-- CSS GLOBAL -->
     <link rel="stylesheet" th:href="@{/css/main.css}">
 
-    <!-- Styles spécifiques à la page -->
     <style>
         .badge {
             padding: 4px 10px;
@@ -33,23 +31,20 @@
 
 <body>
 
-<!-- HEADER + SIDEBAR -->
 <div th:replace="layout/header :: header"></div>
 <div th:replace="layout/sidebar :: sidebar"></div>
 
-
-<!-- CONTENU -->
 <main class="content">
 
     <div class="page-header">
         <h2>📚 Mes prêts & réservations</h2>
         <p class="text-muted">Consultez vos livres réservés, empruntés ou retournés</p>
     </div>
-<div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
     <div class="card">
-
         <table class="table">
             <thead>
             <tr>
@@ -64,16 +59,19 @@
 
             <tbody>
 
-            <!-- 🔁 CHAQUE PRET -->
+            <!-- 🔁 LISTE DES PRETS -->
             <tr th:each="pret : ${prets}">
 
-                <!-- TITRE -->
-                <td th:text="${pret.ressource.titre}"></td>
+                <!-- TITRE RESSOURCE -->
+                <td th:text="${pret.ressource.titre}">Titre</td>
 
-                <!-- BIBLIOTHÈQUE -->
-                <td th:text="${pret.bibliotheque.nom}"></td>
+                <!-- NOM BIBLIOTHÈQUE -->
+                <td th:text="${pret.stockBibliotheque != null && pret.stockBibliotheque.bibliotheque != null
+                               ? pret.stockBibliotheque.bibliotheque.nom
+                               : '-'}">
+                </td>
 
-                <!-- STATUT AVEC BADGE -->
+                <!-- STATUT -->
                 <td>
                     <span class="badge"
                           th:classappend="' badge-' + ${pret.statut.name().toLowerCase()}"
@@ -90,23 +88,23 @@
                 <!-- ACTIONS -->
                 <td>
 
-               <!-- ACTION : Annuler réservation (uniquement si RESERVE) -->
-<form th:if="${pret.statut.name() == 'RESERVE'}"
-      th:action="@{/lecteur/prets/annuler/{id}(id=${pret.id})}"
-      method="post"
-      onsubmit="return confirm('Annuler cette réservation ?');">
-    <button class="btn btn-danger btn-sm">❌ Annuler</button>
-</form>
+                    <!-- ❌ ANNULER RÉSERVATION -->
+                    <form th:if="${pret.statut.name() == 'RESERVE'}"
+                          th:action="@{/lecteur/prets/annuler/{id}(id=${pret.id})}"
+                          method="post"
+                          onsubmit="return confirm('Annuler cette réservation ?');">
 
+                        <button class="btn btn-danger btn-sm">❌ Annuler</button>
+                    </form>
 
-                    <!-- 🔄 RETOURNER UNE RESSOURCE -->
+                    <!-- 🔄 RETOURNER -->
                     <form th:if="${pret.statut.name() == 'EN_COURS' or pret.statut.name() == 'EMPRUNTE'}"
                           th:action="@{/lecteur/prets/retourner/{id}(id=${pret.id})}"
                           method="post">
                         <button class="btn btn-warning btn-sm">🔄 Retourner</button>
                     </form>
 
-                    <!-- Aucun bouton -->
+                    <!-- Aucune action possible -->
                     <span th:if="${pret.statut.name() != 'RESERVE'
                                   and pret.statut.name() != 'EN_COURS'
                                   and pret.statut.name() != 'EMPRUNTE'}">—</span>
@@ -115,7 +113,7 @@
 
             </tr>
 
-            <!-- SI VIDE -->
+            <!-- SI LISTE VIDE -->
             <tr th:if="${#lists.isEmpty(prets)}">
                 <td colspan="6" class="text-center text-muted">
                     Vous n'avez aucun prêt ou réservation pour le moment.

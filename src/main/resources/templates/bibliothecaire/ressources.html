@@ -23,7 +23,7 @@
             <p class="text-muted">Catalogue de votre bibliothèque</p>
         </div>
 
-        <a class="btn btn-primary" th:href="@{/bibliothecaire/ressources/new}">
+        <a class="btn btn-primary" th:href="@{/ressources/new}">
             ➕ Ajouter une ressource
         </a>
     </div>
@@ -77,12 +77,12 @@
 
                 <!-- ACTIONS (pour plus tard) -->
                 <div class="resource-actions">
-                   <a th:href="@{'/bibliothecaire/ressources/edit/' + ${r.id}}"
+                   <a th:href="@{'/ressources/edit/' + ${r.id}}"
    class="btn btn-secondary">
    Modifier
 </a>
 
-<a th:href="@{'/bibliothecaire/ressources/delete/' + ${r.id}}"
+<a th:href="@{'/ressources/delete/' + ${r.id}}"
    class="btn btn-danger"
    onclick="return confirm('Voulez-vous vraiment supprimer cette ressource ?');">
     🗑 Supprimer

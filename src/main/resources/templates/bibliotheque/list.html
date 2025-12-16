@@ -5,28 +5,22 @@
     <title>Gestion des bibliothèques | BiblioNet</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
-
 <body>
 
 <div th:replace="layout/header :: header"></div>
 <div th:replace="layout/sidebar :: sidebar"></div>
 
 <main class="content">
-
     <div class="page-header">
         <div>
             <h2>Gestion des bibliothèques</h2>
-            <p class="text-muted">
-                Voir, modifier ou activer / désactiver les bibliothèques
-            </p>
+            <p class="text-muted">Voir, modifier ou activer / désactiver les bibliothèques</p>
         </div>
 
-        <a th:href="@{/super-admin/bibliotheques/add}" class="btn btn-primary">
-            ➕ Ajouter une bibliothèque
-        </a>
+        <a th:href="@{/super-admin/bibliotheques/add}" class="btn btn-primary">➕ Ajouter une bibliothèque</a>
     </div>
 
-    <!-- MESSAGES -->
+    <!-- MESSAGES FLASH -->
     <div th:if="${success}" class="alert alert-success auto-hide">
         <span th:text="${success}"></span>
     </div>
@@ -36,81 +30,58 @@
     </div>
 
     <div class="card">
-
         <table class="table">
-
             <thead>
-            <tr>
-                <th>#</th>
-                <th>Nom</th>
-                <th>Code</th>
-                <th>Ville</th>
-                <th>Statut</th>
-                <th>Actions</th>
-            </tr>
+                <tr>
+                    <th>#</th>
+                    <th>Nom</th>
+                    <th>Code</th>
+                    <th>Ville</th>
+                    <th>Téléphone</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
             </thead>
 
             <tbody>
+                <tr th:each="b, stat : ${bibliotheques}">
+                    <td th:text="${stat.count}"></td>
+                    <td th:text="${b.nom}"></td>
+                    <td th:text="${b.code}"></td>
+                    <td th:text="${b.adresse.ville}"></td>
+                    <td th:text="${b.telephone ?: '-'}"></td>
+                    <td>
+                        <span th:if="${b.actif}" class="badge badge-green">Active</span>
+                        <span th:unless="${b.actif}" class="badge badge-red">Inactive</span>
+                        <div th:unless="${b.actif}" style="font-size:12px;color:#b91c1c;margin-top:4px;">
+                            ⚠ Accès suspendu pour les admins et bibliothécaires
+                        </div>
+                    </td>
+                    <td class="actions">
+                        <a th:href="@{/super-admin/bibliotheques/{id}(id=${b.id})}" class="btn btn-sm btn-info">👁 Voir</a>
+                        <a th:href="@{/super-admin/bibliotheques/edit/{id}(id=${b.id})}" class="btn btn-sm btn-warning">✏️ Modifier</a>
 
-            <tr th:each="b, stat : ${bibliotheques}">
-                <td th:text="${stat.count}"></td>
-                <td th:text="${b.nom}"></td>
-                <td th:text="${b.code}"></td>
-                <td th:text="${b.adresse.ville}"></td>
+                        <a th:if="${b.actif}" th:href="@{/super-admin/bibliotheques/changer-statut/{id}(id=${b.id})}" 
+                           class="btn btn-sm btn-danger" onclick="return confirm('Désactiver cette bibliothèque ?');">🔒 Désactiver</a>
 
-                <td>
-                    <span th:if="${b.actif}" class="badge badge-green">Active</span>
-                    <span th:unless="${b.actif}" class="badge badge-red">Inactive</span>
+                        <a th:unless="${b.actif}" th:href="@{/super-admin/bibliotheques/changer-statut/{id}(id=${b.id})}" 
+                           class="btn btn-sm btn-success" onclick="return confirm('Réactiver cette bibliothèque ?');">🔓 Activer</a>
+                    </td>
+                </tr>
 
-                    <div th:unless="${b.actif}"
-                         style="font-size:12px;color:#b91c1c;margin-top:4px;">
-                        ⚠ Accès suspendu pour les admins et bibliothécaires
-                    </div>
-                </td>
-
-                <td class="actions">
-
-                    <a th:href="@{/super-admin/bibliotheques/{id}(id=${b.id})}"
-                       class="btn btn-sm btn-info">👁 Voir</a>
-
-                    <a th:href="@{/super-admin/bibliotheques/edit/{id}(id=${b.id})}"
-                       class="btn btn-sm btn-warning">✏️ Modifier</a>
-
-                    <a th:if="${b.actif}"
-                       th:href="@{/super-admin/bibliotheques/changer-statut/{id}(id=${b.id})}"
-                       class="btn btn-sm btn-danger"
-                       onclick="return confirm('Désactiver cette bibliothèque ?');">
-                        🔒 Désactiver
-                    </a>
-
-                    <a th:unless="${b.actif}"
-                       th:href="@{/super-admin/bibliotheques/changer-statut/{id}(id=${b.id})}"
-                       class="btn btn-sm btn-success"
-                       onclick="return confirm('Réactiver cette bibliothèque ?');">
-                        🔓 Activer
-                    </a>
-
-                </td>
-            </tr>
-
-            <tr th:if="${#lists.isEmpty(bibliotheques)}">
-                <td colspan="6" style="text-align:center;padding:20px;">
-                    Aucune bibliothèque trouvée
-                </td>
-            </tr>
-
+                <tr th:if="${#lists.isEmpty(bibliotheques)}">
+                    <td colspan="7" style="text-align:center;padding:20px;">Aucune bibliothèque trouvée</td>
+                </tr>
             </tbody>
         </table>
     </div>
-
 </main>
 
 <div th:replace="layout/footer :: footer"></div>
 
 <script>
     setTimeout(() => {
-        document.querySelectorAll('.auto-hide')
-            .forEach(el => el.remove());
+        document.querySelectorAll('.auto-hide').forEach(el => el.remove());
     }, 4000);
 </script>
 

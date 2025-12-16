@@ -18,17 +18,14 @@
                   th:text="${currentUser.email}">
             </span>
 
-            <!-- ROLE -->
-            <span class="role-badge"
-                  th:switch="${currentUser.role}">
+            <span class="role-badge" th:switch="${currentUser.role.name()}">
+    <span th:case="'SUPER_ADMIN'">Super Admin</span>
+    <span th:case="'ADMIN'">Admin</span>
+    <span th:case="'BIBLIOTHECAIRE'">Bibliothécaire</span>
+    <span th:case="'LECTEUR'">Lecteur</span>
+    <span th:case="*">Utilisateur</span>
+</span>
 
-                <span th:case="SUPER_ADMIN">Super Admin</span>
-                <span th:case="ADMIN">Admin</span>
-                <span th:case="BIBLIOTHECAIRE">Bibliothécaire</span>
-                <span th:case="LECTEUR">Lecteur</span>
-                <span th:case="*">Utilisateur</span>
-
-            </span>
 
             <!-- 🏛️ BIBLIOTHÈQUE (ADMIN & BIBLIOTHÉCAIRE) -->
             <span class="bibliotheque-name"

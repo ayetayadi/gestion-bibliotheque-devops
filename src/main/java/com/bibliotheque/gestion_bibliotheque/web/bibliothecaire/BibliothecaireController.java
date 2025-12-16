@@ -7,6 +7,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.bibliotheque.gestion_bibliotheque.dao.PretRepository;
 import com.bibliotheque.gestion_bibliotheque.entities.pret.StatutPret;
@@ -25,13 +26,10 @@ public class BibliothecaireController {
     private final PretRepository pretRepository;
     private final PretWorkflowService pretWorkflowService;
 
-    /* =====================================================
-     * 1️⃣ LISTE DES PRÊTS À GÉRER
-     * ===================================================== */
+    // 1️⃣ Liste des prêts à gérer
     @GetMapping("/prets")
-    public String pretsEnCours(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            Model model) {
+    public String pretsEnCours(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                               Model model) {
 
         if (userDetails == null) return "redirect:/login";
 
@@ -48,40 +46,66 @@ public class BibliothecaireController {
                         )
                 ));
 
-        return "pret/prets-en-cours";
+        return "bibliothecaire/prets-en-cours";
     }
 
-    /* =====================================================
-     * 2️⃣ VALIDER UN PRÊT (passer de RESERVE → EMPRUNTE)
-     * ===================================================== */
+    // 2️⃣ Valider un prêt (RESERVE → EMPRUNTE)
     @PostMapping("/prets/valider/{id}")
-    public String validerPret(
-            @PathVariable Long id,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public String validerPret(@PathVariable Long id,
+                              @AuthenticationPrincipal UserDetailsImpl userDetails,
+                              RedirectAttributes redirectAttrs) {
 
         if (userDetails == null) return "redirect:/login";
 
         Utilisateur bibliothecaire = userDetails.getUtilisateur();
 
-        pretWorkflowService.validerEmprunt(id, bibliothecaire);
+        try {
+            pretWorkflowService.validerEmprunt(id, bibliothecaire);
+            redirectAttrs.addFlashAttribute("success", "Prêt validé !");
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("error", e.getMessage());
+        }
 
         return "redirect:/bibliothecaire/prets";
     }
 
-    /* =====================================================
-     * 3️⃣ CLÔTURER UN PRÊT (RETOURNE → CLOTURE)
-     * ===================================================== */
-    @PostMapping("/prets/cloturer/{id}")
-    public String cloturerPret(
-            @PathVariable Long id,
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam(defaultValue = "") String commentaire) {
+    // 3️⃣ Retourner une ressource (EMPRUNTE / EN_COURS → RETOURNE)
+    @PostMapping("/prets/retourner/{id}")
+    public String retournerPret(@PathVariable Long id,
+                                @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                RedirectAttributes redirectAttrs) {
 
         if (userDetails == null) return "redirect:/login";
 
         Utilisateur bibliothecaire = userDetails.getUtilisateur();
 
-        pretWorkflowService.cloturerPret(id, bibliothecaire, commentaire);
+        try {
+            pretWorkflowService.retournerPret(id, bibliothecaire);
+            redirectAttrs.addFlashAttribute("success", "Ressource retournée !");
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/bibliothecaire/prets";
+    }
+
+    // 4️⃣ Clôturer un prêt (RETOURNE → CLOTURE)
+    @PostMapping("/prets/cloturer/{id}")
+    public String cloturerPret(@PathVariable Long id,
+                               @AuthenticationPrincipal UserDetailsImpl userDetails,
+                               @RequestParam(defaultValue = "") String commentaire,
+                               RedirectAttributes redirectAttrs) {
+
+        if (userDetails == null) return "redirect:/login";
+
+        Utilisateur bibliothecaire = userDetails.getUtilisateur();
+
+        try {
+            pretWorkflowService.cloturerPret(id, bibliothecaire, commentaire);
+            redirectAttrs.addFlashAttribute("success", "Prêt clôturé !");
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("error", e.getMessage());
+        }
 
         return "redirect:/bibliothecaire/prets";
     }

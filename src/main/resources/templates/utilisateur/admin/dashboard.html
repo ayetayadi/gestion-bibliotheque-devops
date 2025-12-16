@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Administrateur | BiblioNet</title>
+
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div th:replace="layout/header :: header"></div>
+
+<!-- SIDEBAR -->
+<div th:replace="layout/sidebar :: sidebar"></div>
+
+<main class="dashboard-content">
+
+    <!-- ================= HEADER ================= -->
+    <div class="dashboard-header">
+        <h3><i class="fas fa-chart-line"></i> Dashboard Administrateur</h3>
+
+        <div class="header-actions">
+            <a th:href="@{/admin/export/rapport/pdf}" class="btn-export">
+                <i class="fas fa-file-pdf"></i> Exporter le rapport PDF
+            </a>
+        </div>
+    </div>
+
+    <!-- ================= KPI ================= -->
+    <div class="stats-summary">
+
+        <div class="stat-card">
+            <i class="fas fa-book stat-icon"></i>
+            <h3 th:text="${totalPrets}">0</h3>
+            <p>Total prêts</p>
+        </div>
+
+        <div class="stat-card">
+            <i class="fas fa-book-open stat-icon"></i>
+            <h3 th:text="${pretsActifs}">0</h3>
+            <p>Prêts actifs</p>
+        </div>
+
+        <div class="stat-card">
+            <i class="fas fa-boxes stat-icon"></i>
+            <h3 th:text="${totalStock}">0</h3>
+            <p>Stock total</p>
+        </div>
+
+        <div class="stat-card">
+            <i class="fas fa-percentage stat-icon"></i>
+            <h3 th:text="${#numbers.formatDecimal(tauxRotationGlobal,1,2)} + '%'">0%</h3>
+            <p>Taux rotation global</p>
+        </div>
+
+    </div>
+
+    <!-- ================= ANALYSES ================= -->
+    <div class="analytics-section">
+        <h3><i class="fas fa-chart-bar"></i> Analyses Statistiques</h3>
+
+        <div class="charts-container">
+
+            <!-- Prêts par catégorie -->
+            <div class="chart-wrapper">
+                <div class="chart-header">
+                    <h3>📚 Prêts par catégorie</h3>
+                </div>
+                <div class="chart-box">
+                    <canvas id="categorieChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Prêts par bibliothèque -->
+            <div class="chart-wrapper">
+                <div class="chart-header">
+                    <h3>🏛️ Prêts par bibliothèque</h3>
+                </div>
+                <div class="chart-box">
+                    <canvas id="bibliothequeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Taux de rotation -->
+            <div class="chart-wrapper">
+                <div class="chart-header">
+                    <h3>🔄 Taux de rotation par bibliothèque</h3>
+                </div>
+                <div class="chart-box">
+                    <canvas id="rotationChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</main>
+
+<!-- ================= JS ================= -->
+<script th:inline="javascript">
+
+    /* ===== DATA ===== */
+    const pretsParCategorie = /*[[${pretsParCategorie}]]*/ {};
+    const pretsParBibliotheque = /*[[${pretsParBibliotheque}]]*/ {};
+    const tauxRotationParBibliotheque = /*[[${tauxRotationParBibliotheque}]]*/ {};
+
+    /* ===== CHART 1 : CATEGORIES ===== */
+    new Chart(document.getElementById('categorieChart'), {
+        type: 'bar',
+        data: {
+            labels: Object.keys(pretsParCategorie),
+            datasets: [{
+                label: 'Nombre de prêts',
+                data: Object.values(pretsParCategorie),
+                backgroundColor: '#4A6CF7'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    /* ===== CHART 2 : BIBLIOTHEQUES ===== */
+    new Chart(document.getElementById('bibliothequeChart'), {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(pretsParBibliotheque),
+            datasets: [{
+                data: Object.values(pretsParBibliotheque),
+                backgroundColor: ['#4A6CF7','#10B981','#F59E0B','#EF4444','#3B82F6']
+            }]
+        },
+        options: { responsive: true }
+    });
+
+    /* ===== CHART 3 : TAUX ROTATION (CORRIGÉ) ===== */
+    const rotationValues = Object.values(tauxRotationParBibliotheque);
+
+    const maxValue = Math.max(...rotationValues, 1);
+    const minValue = Math.min(...rotationValues);
+    const padding = 5;
+
+    new Chart(document.getElementById('rotationChart'), {
+        type: 'line',
+        data: {
+            labels: Object.keys(tauxRotationParBibliotheque),
+            datasets: [{
+                label: 'Taux de rotation (%)',
+                data: rotationValues,
+                borderColor: '#10B981',
+                backgroundColor: 'rgba(16,185,129,0.2)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.raw.toFixed(2) + '%'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    min: Math.max(0, minValue - padding),
+                    max: maxValue + padding,
+                    ticks: {
+                        callback: v => v + '%'
+                    }
+                }
+            }
+        }
+    });
+
+</script>
+
+</body>
+</html>

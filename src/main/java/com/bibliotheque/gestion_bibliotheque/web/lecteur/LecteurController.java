@@ -1,5 +1,7 @@
 package com.bibliotheque.gestion_bibliotheque.web.lecteur;
 
+import java.util.stream.Collectors;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -17,7 +19,6 @@ import com.bibliotheque.gestion_bibliotheque.security.UserDetailsImpl;
 import com.bibliotheque.gestion_bibliotheque.entities.pret.StatutPret;
 
 import lombok.RequiredArgsConstructor;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/lecteur")
@@ -29,21 +30,17 @@ public class LecteurController {
     private final PretRepository pretRepository;
     private final RessourceService ressourceService;
 
-    // 1️⃣ RÉSERVER UNE RESSOURCE
     @PostMapping("/prets/reserver/{id}")
     public String reserver(@PathVariable Long id,
                            @AuthenticationPrincipal UserDetailsImpl userDetails,
                            RedirectAttributes redirectAttrs) {
-
-        if (userDetails == null) return "redirect:/login";
 
         Utilisateur lecteur = userDetails.getUtilisateur();
 
         try {
             Ressource res = ressourceService.getById(id);
             StockBibliotheque stock = ressourceService.getStock(res);
-
-            pretWorkflowService.reserverRessource(lecteur, res, stock.getBibliotheque(), stock);
+            pretWorkflowService.reserverRessource(lecteur, res, stock);
             redirectAttrs.addFlashAttribute("success", "Réservation effectuée !");
         } catch (Exception e) {
             redirectAttrs.addFlashAttribute("error", e.getMessage());
@@ -52,38 +49,43 @@ public class LecteurController {
         return "redirect:/catalogue";
     }
 
-    // 2️⃣ AFFICHER MES PRÊTS (exclure les réservations annulées)
     @GetMapping("/prets")
-    public String mesPrets(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                           Model model) {
-
-        if (userDetails == null) return "redirect:/login";
+    public String mesPrets(@AuthenticationPrincipal UserDetailsImpl userDetails, Model model) {
 
         Utilisateur lecteur = userDetails.getUtilisateur();
 
         var prets = pretRepository.findByLecteur(lecteur)
-                        .stream()
-                        .filter(p -> p.getStatut() != null && p.getStatut() != StatutPret.ANNULE)
-                        .collect(Collectors.toList());
+                .stream()
+                .filter(p -> p.getStatut() != StatutPret.ANNULE)
+                .collect(Collectors.toList());
 
         model.addAttribute("prets", prets);
-
         return "lecteur/mes-prets";
     }
 
-    // 3️⃣ ANNULER UNE RÉSERVATION
     @PostMapping("/prets/annuler/{id}")
     public String annulerReservation(@PathVariable Long id,
                                      @AuthenticationPrincipal UserDetailsImpl userDetails,
                                      RedirectAttributes redirectAttrs) {
 
-        if (userDetails == null) return "redirect:/login";
+        try {
+            pretWorkflowService.annulerReservation(id, userDetails.getUtilisateur());
+            redirectAttrs.addFlashAttribute("success", "Réservation annulée.");
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("error", e.getMessage());
+        }
 
-        Utilisateur lecteur = userDetails.getUtilisateur();
+        return "redirect:/lecteur/prets";
+    }
+
+    @PostMapping("/prets/retourner/{id}")
+    public String retournerPret(@PathVariable Long id,
+                                @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                RedirectAttributes redirectAttrs) {
 
         try {
-            pretWorkflowService.annulerReservation(id, lecteur);
-            redirectAttrs.addFlashAttribute("success", "Réservation annulée.");
+            pretWorkflowService.retournerPret(id, userDetails.getUtilisateur());
+            redirectAttrs.addFlashAttribute("success", "Ressource retournée !");
         } catch (Exception e) {
             redirectAttrs.addFlashAttribute("error", e.getMessage());
         }

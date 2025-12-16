@@ -56,17 +56,17 @@ public class UserDetailsImpl implements UserDetails {
         return true;
     }
 
-    @Override
+  @Override
 public boolean isEnabled() {
-
-    // 🔥 SUPER ADMIN : accès global
     if (utilisateur.getRole() == Role.SUPER_ADMIN) {
         return utilisateur.isActif();
+    } else if (utilisateur.getRole() == Role.ADMIN || utilisateur.getRole() == Role.BIBLIOTHECAIRE) {
+        return utilisateur.isActif()
+               && utilisateur.getBibliotheque() != null
+               && utilisateur.getBibliotheque().isActif();
+    } else if (utilisateur.getRole() == Role.LECTEUR) {
+        return utilisateur.isActif(); 
     }
-
-    // ADMIN / BIBLIOTHECAIRE : dépend de la bibliothèque
-    return utilisateur.isActif()
-            && utilisateur.getBibliotheque() != null
-            && utilisateur.getBibliotheque().isActif();
+    return false;
 }
 }
