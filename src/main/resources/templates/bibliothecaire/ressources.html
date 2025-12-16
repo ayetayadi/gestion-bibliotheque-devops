@@ -8,15 +8,12 @@
 
 <body>
 
-<!-- HEADER -->
 <div th:replace="layout/header :: header"></div>
-
-<!-- SIDEBAR -->
 <div th:replace="layout/sidebar :: sidebar"></div>
 
 <main class="content">
 
-    <!-- TITRE + BOUTON -->
+    <!-- ================= TITRE + BOUTON ================= -->
     <div class="page-header">
         <div>
             <h2>📚 Liste des ressources</h2>
@@ -28,28 +25,62 @@
         </a>
     </div>
 
-    <!-- LISTE -->
+ <!-- ==================== BARRE DE FILTRES ==================== -->
+<form method="get" action="/ressources" class="filter-bar">
+
+    <input type="text" name="keyword"
+           placeholder="Rechercher un titre ou auteur..."
+           th:value="${keyword}">
+
+<select name="biblioId" th:if="${currentUser.role.name() == 'ADMIN'}">
+    <option value="">Toutes les bibliothèques</option>
+
+    <option th:each="b : ${bibliotheques}"
+            th:value="${b.id}"
+            th:selected="${b.id == selectedBiblio}"
+            th:text="${b.nom}">
+    </option>
+</select>
+    <select name="categorie">
+        <option value="">Catégorie</option>
+        <option th:each="c : ${categories}"
+                th:value="${c}"
+                th:selected="${c == selectedCategorie}"
+                th:text="${c}">
+        </option>
+    </select>
+
+    <select name="typeRessource">
+        <option value="">Type</option>
+        <option th:each="t : ${typesRessource}"
+                th:value="${t}"
+                th:selected="${t == selectedType}"
+                th:text="${t}">
+        </option>
+    </select>
+
+    <button type="submit" class="btn-primary">🔍 Rechercher</button>
+
+</form>
+
+    <!-- ==================== LISTE DES RESSOURCES ==================== -->
     <div class="resource-list">
 
-        <!-- CARD -->
-        <div class="resource-card" th:each="r : ${ressources}">
+        <div class="resource-card" th:each="r : ${ressources}" th:if="${r != null}">
 
             <!-- IMAGE -->
             <div class="resource-img">
                 <img th:if="${r.cheminCouverture != null}"
-                     th:src="@{'/uploads/covers/' + ${r.cheminCouverture}}"
+                     th:src="${#strings.startsWith(r.cheminCouverture, 'http') 
+                              ? r.cheminCouverture 
+                              : '/uploads/covers/' + r.cheminCouverture}"
                      alt="Couverture">
 
-                <div th:if="${r.cheminCouverture == null}" class="no-cover">
-                    📘
-                </div>
+                <div th:if="${r.cheminCouverture == null}" class="no-cover">📘</div>
             </div>
 
             <!-- INFO -->
             <div class="resource-content">
-<div th:if="${param.deleted}" class="alert alert-success">
-    Ressource supprimée avec succès ✔
-</div>
 
                 <div class="resource-header">
                     <h3 th:text="${r.titre}"></h3>
@@ -69,30 +100,33 @@
                 </p>
 
                 <!-- STOCK -->
-   <div class="stock-box" th:with="s=${stocks[r.id]}">
-    Disponible : <span th:text="${s.quantiteDisponible}"></span>
-    Total : <span th:text="${s.quantiteTotale}"></span>
-</div>
+                <div class="stock-box" th:with="s=${stocks[r.id]}">
+                    <div class="stock-row">
+                        <span class="label">Disponible :</span>
+                        <span th:text="${s.quantiteDisponible}"></span>
+                        <span>/</span>
+                        <span th:text="${s.quantiteTotale}"></span>
+                    </div>
 
+                    <div class="stock-row">
+                        <span class="label">Total :</span>
+                        <span th:text="${s.quantiteTotale}"></span>
+                    </div>
+                </div>
 
-                <!-- ACTIONS (pour plus tard) -->
+                <!-- ACTIONS -->
                 <div class="resource-actions">
-                   <a th:href="@{'/ressources/edit/' + ${r.id}}"
-   class="btn btn-secondary">
-   Modifier
-</a>
-
-<a th:href="@{'/ressources/delete/' + ${r.id}}"
-   class="btn btn-danger"
-   onclick="return confirm('Voulez-vous vraiment supprimer cette ressource ?');">
-    🗑 Supprimer
-</a>
+                    <a th:href="@{'/ressources/edit/' + ${r.id}}" class="btn btn-secondary">
+                        Modifier
+                    </a>
                 </div>
 
             </div>
-
         </div>
     </div>
+
+    <!-- PAGINATION -->
+    <div th:replace="fragments/pagination :: pagination(${page}, ${baseUrl})"></div>
 
 </main>
 

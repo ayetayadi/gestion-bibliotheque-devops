@@ -2,8 +2,9 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Prêts en cours</title>
+    <title>Prêts en cours | BiblioNet</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+
     <style>
         .badge {
             padding: 4px 10px;
@@ -12,23 +13,140 @@
             font-weight: bold;
             color: white;
         }
+
         .badge-reserve { background: #ff9800; }
         .badge-emprunte { background: #1976d2; }
         .badge-en_cours { background: #009688; }
         .badge-retourne { background: #9c27b0; }
         .badge-cloture { background: #555; }
+
         .btn-sm {
             padding: 6px 10px;
             border-radius: 6px;
             font-size: 13px;
+            margin-top: 4px;
         }
-        input[type="date"] {
-            padding: 4px;
-            font-size: 12px;
-            margin-right: 4px;
+
+        input[type="date"], select, input[type="text"] {
+            padding: 6px;
+            font-size: 13px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            width: 100%;
         }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            align-items: end;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        #notif-container {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2563eb;
+        }
+
+        /* ---- Carte Filtres ---- */
+        .page-header {
+    margin-bottom: 5px !important;
+}
+
+.filter-card {
+    margin-top: 0 !important;
+    padding-top: 0px;
+}
+.filter-card {
+    background: #ffffff;
+    padding: 22px;
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-bottom: 22px;
+}
+
+/* ---- Grille ---- */
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    
+}
+
+/* ---- Items ---- */
+.filter-item label {
+    display: block;
+    font-size: 14px;
+    color: #334155;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.filter-item input,
+.filter-item select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #f8fafc;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+/* Hover + Focus */
+.filter-item input:focus,
+.filter-item select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 4px rgba(37, 99, 235, 0.3);
+    background: white;
+}
+
+/* ---- Actions ---- */
+.filter-actions {
+    margin-top: 18px;
+    display: flex;
+    gap: 12px;
+}
+
+/* ---- Boutons ---- */
+.btn-primary {
+    background: #2563eb;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.btn-primary:hover {
+    background: #1d4ed8;
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: #475569;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    text-decoration: none;
+    transition: 0.2s;
+}
+.btn-secondary:hover {
+    background: #cbd5e1;
+}
+
     </style>
 </head>
+
 <body>
 
 <div th:replace="layout/header :: header"></div>
@@ -36,82 +154,162 @@
 
 <main class="content">
 
-<div id="notif-container">
-    <h4>Notifications</h4>
-    <ul id="notifications"></ul>
+    <!-- NOTIFICATIONS -->
+    <div id="notif-container">
+        <h4 style="margin:0 0 8px 0;">Notifications</h4>
+        <ul id="notifications"></ul>
+    </div>
+
+    <!-- TITRE -->
+    <div class="page-header">
+        <div>
+            <h2>📚 Prêts en cours</h2>
+            <p class="text-muted">Gérer, valider ou clôturer les prêts en attente</p>
+        </div>
+    </div>
+
+    <!-- ======================= FILTRES ======================= -->
+<div class="filter-card">
+    <form method="get">
+
+        <div class="filter-grid">
+
+            <!-- Recherche -->
+            <div class="filter-item">
+                <label>Recherche</label>
+                <input type="text" name="keyword"
+                       placeholder="Lecteur ou ressource..."
+                       th:value="${keyword}">
+            </div>
+
+            <!-- Statut -->
+            <div class="filter-item">
+                <label>Statut</label>
+                <select name="statut">
+                    <option value="">Tous</option>
+                    <option th:each="s : ${statuts}"
+                            th:value="${s}"
+                            th:text="${s}"
+                            th:selected="${selectedStatut != null and s.name() == selectedStatut.name()}">
+                    </option>
+                </select>
+            </div>
+
+            <!-- Date début -->
+            <div class="filter-item">
+                <label>Date début ≥</label>
+                <input type="date" name="dateDebut" th:value="${dateDebut}">
+            </div>
+
+            <!-- Date fin -->
+            <div class="filter-item">
+                <label>Date fin ≤</label>
+                <input type="date" name="dateFin" th:value="${dateFin}">
+            </div>
+
+        </div>
+
+        <div class="filter-actions">
+            <button class="btn-primary" type="submit">🔍 Filtrer</button>
+            <a th:href="@{/bibliothecaire/prets}" class="btn-secondary">⟲ Réinitialiser</a>
+        </div>
+
+    </form>
 </div>
 
-    <h2>📚 Prêts en cours</h2>
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Ressource</th>
-            <th>Lecteur</th>
-            <th>Email</th>
-            <th>Statut</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="pret : ${prets}">
-            <td th:text="${pret.ressource.titre}"></td>
-            <td th:text="${pret.lecteur.nom + ' ' + pret.lecteur.prenom}"></td>
-            <td th:text="${pret.lecteur.email}"></td>
-            <td>
-                <span class="badge" 
-                      th:classappend="' badge-' + ${pret.statut.name().toLowerCase()}"
-                      th:text="${pret.statut}"></span>
-            </td>
-            <td>
-                <!-- Validation prêt RESERVE : date de début et fin -->
-                <form th:if="${pret.statut.name() == 'RESERVE'}"
-                      th:action="@{/bibliothecaire/prets/valider/{id}(id=${pret.id})}"
-                      method="post">
-                    <label>Début:</label>
-                    <input type="date" name="dateDebut" required>
-                    <label>Fin:</label>
-                    <input type="date" name="dateFin" required>
-                    <button class="btn btn-success btn-sm">Valider</button>
-                </form>
 
-                <!-- Retourner un prêt EMPRUNTE / EN_COURS -->
-                <form th:if="${pret.statut.name() == 'EMPRUNTE' or pret.statut.name() == 'EN_COURS'}"
-                      th:action="@{/bibliothecaire/prets/retourner/{id}(id=${pret.id})}"
-                      method="post">
-                    <button class="btn btn-warning btn-sm">Retourner</button>
-                </form>
+    <!-- TABLE -->
+    <div class="card">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Ressource</th>
+                <th>Lecteur</th>
+                <th>Email</th>
+                <th>Statut</th>
+                <th style="width: 260px;">Actions</th>
+            </tr>
+            </thead>
 
-                <!-- Clôturer un prêt RETOURNE -->
-                <form th:if="${pret.statut.name() == 'RETOURNE'}"
-                      th:action="@{/bibliothecaire/prets/cloturer/{id}(id=${pret.id})}"
-                      method="post">
-                    <button class="btn btn-primary btn-sm">Clôturer</button>
-                </form>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+            <tbody>
+            <tr th:each="pret : ${prets}">
+                <td th:text="${pret.ressource.titre}"></td>
+
+                <td th:text="${pret.lecteur.nom + ' ' + pret.lecteur.prenom}"></td>
+
+                <td th:text="${pret.lecteur.email}"></td>
+
+                <td>
+                    <span class="badge"
+                          th:classappend="' badge-' + ${pret.statut.name().toLowerCase()}"
+                          th:text="${pret.statut}">
+                    </span>
+                </td>
+
+                <td class="actions">
+
+                    <!-- VALIDER PRÊT -->
+                    <form th:if="${pret.statut.name() == 'RESERVE'}"
+                          th:action="@{/bibliothecaire/prets/valider/{id}(id=${pret.id})}"
+                          method="post">
+
+                        <input type="date" name="dateDebut" required>
+                        <input type="date" name="dateFin" required>
+
+                        <button class="btn btn-success btn-sm">✔ Valider</button>
+                    </form>
+
+                    <!-- RETOURNER -->
+                    <form th:if="${pret.statut.name() == 'EMPRUNTE' or pret.statut.name() == 'EN_COURS'}"
+                          th:action="@{/bibliothecaire/prets/retourner/{id}(id=${pret.id})}"
+                          method="post">
+
+                        <button class="btn btn-warning btn-sm">↩ Retourner</button>
+                    </form>
+
+                    <!-- CLÔTURER -->
+                    <form th:if="${pret.statut.name() == 'RETOURNE'}"
+                          th:action="@{/bibliothecaire/prets/cloturer/{id}(id=${pret.id})}"
+                          method="post">
+
+                        <button class="btn btn-primary btn-sm">🔒 Clôturer</button>
+                    </form>
+
+                </td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(prets)}">
+                <td colspan="5" style="text-align:center; padding:20px;">
+                    Aucun prêt à gérer actuellement.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <div th:replace="fragments/pagination :: pagination(${page}, ${baseUrl})"></div>
+
+    <div th:replace="layout/footer :: footer"></div>
+
 </main>
-
-</body>
-
 
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+
 <script>
     const socket = new SockJS('/ws');
     const stompClient = Stomp.over(socket);
 
     stompClient.connect({}, function(frame) {
-        console.log('Connecté: ' + frame);
-
         stompClient.subscribe('/user/' + "${#authentication.name()}" + '/topic/notifications', function(msg) {
             const notifList = document.getElementById('notifications');
             const li = document.createElement('li');
             li.textContent = msg.body;
-            notifList.prepend(li); // Ajoute en haut
+            notifList.prepend(li);
         });
     });
 </script>
 
+</body>
 </html>

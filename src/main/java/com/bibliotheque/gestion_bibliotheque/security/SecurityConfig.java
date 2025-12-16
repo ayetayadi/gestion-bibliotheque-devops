@@ -16,54 +16,44 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-            // ❗ Désactivation CSRF car tu n'utilises pas de token
             .csrf(csrf -> csrf.disable())
 
             .authorizeHttpRequests(auth -> auth
 
-                // 🌍 PUBLIC
                 .requestMatchers(
-                        "/",
-                        "/login",
-                        "/register",
-                        "/css/**",
-                        "/js/**",
-                        "/images/**"
+                    "/",
+                    "/login",
+                    "/register",
+                    "/css/**",
+                    "/js/**",
+                    "/images/**"
                 ).permitAll()
 
-                // 📚 LECTEUR — accès GET + POST
-                .requestMatchers("/catalogue/**").hasRole("LECTEUR")
-                .requestMatchers("/lecteur/**").hasRole("LECTEUR")
+                .requestMatchers("/bibliothecaire/**")
+                    .hasRole("BIBLIOTHECAIRE")
 
-                // 👨‍🏫 BIBLIOTHÉCAIRE
-                .requestMatchers("/bibliothecaire/**").hasRole("BIBLIOTHECAIRE")
+                .requestMatchers("/admin/**")
+                    .hasRole("ADMIN")
 
-                // 🧑‍💼 ADMIN
-                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/super-admin/**")
+                    .hasRole("SUPER_ADMIN")
 
-                // 👑 SUPER ADMIN
-                .requestMatchers("/super-admin/**").hasRole("SUPER_ADMIN")
-
-                // 🔐 Tout le reste nécessite une authentification
                 .anyRequest().authenticated()
             )
 
-            // 🔑 FORM LOGIN
             .formLogin(form -> form
-                    .loginPage("/login")
-                    .loginProcessingUrl("/login") // route POST
-                    .usernameParameter("email")
-                    .passwordParameter("password")
-                    .defaultSuccessUrl("/dashboard", true)
-                    .failureUrl("/login?error=true")
-                    .permitAll()
+                .loginPage("/login")
+                .loginProcessingUrl("/login")
+                .usernameParameter("email")
+                .passwordParameter("password")
+                .defaultSuccessUrl("/dashboard", true)
+                .failureUrl("/login?error=true")
+                .permitAll()
             )
-
-            // 🚪 LOGOUT
             .logout(logout -> logout
-                    .logoutUrl("/logout")
-                    .logoutSuccessUrl("/login?logout=true")
-                    .permitAll()
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login?logout=true")
+                .permitAll()
             );
 
         return http.build();

@@ -5,19 +5,22 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.bibliotheque.gestion_bibliotheque.dao.RessourceRepository;
 import com.bibliotheque.gestion_bibliotheque.dao.StockBibliothequeRepository;
 import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.Bibliotheque;
 import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.StockBibliotheque;
 import com.bibliotheque.gestion_bibliotheque.entities.ressource.Ressource;
+import com.bibliotheque.gestion_bibliotheque.entities.ressource.StatutRessource;
 import com.bibliotheque.gestion_bibliotheque.entities.ressource.TypeCategorie;
 import com.bibliotheque.gestion_bibliotheque.entities.ressource.TypeRessource;
 import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
-
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -32,6 +35,31 @@ public class RessourceService {
      * ===================================================== */
     public List<Ressource> listAll() {
         return ressourceRepo.findAll();
+    }
+
+    /* =====================================================
+     * 🔍 RECHERCHE + FILTRAGE + PAGINATION
+     * ===================================================== */
+
+
+     public Map<Long, StockBibliotheque> getAllStocksAsMap() {
+    return stockRepo.findAll().stream()
+            .collect(Collectors.toMap(
+                    s -> s.getRessource().getId(),
+                    s -> s
+            ));
+}
+    public Page<Ressource> searchCatalogue(
+            String keyword,
+            TypeCategorie categorie,
+            TypeRessource typeRessource,
+            Long biblioId,
+            Pageable pageable) {
+
+        if (keyword != null && keyword.isBlank())
+            keyword = null;
+
+        return ressourceRepo.searchCatalogue(keyword, categorie, typeRessource, biblioId, pageable);
     }
 
     /* =====================================================
@@ -53,55 +81,58 @@ public class RessourceService {
     /* =====================================================
      * 4️⃣ AJOUT D’UNE RESSOURCE PAR UN BIBLIOTHÉCAIRE
      * ===================================================== */
-    public Ressource ajouterRessource(
-            String titre,
-            String auteur,
-            TypeRessource typeRessource,
-            TypeCategorie categorie,
-            int quantiteTotale,
-            MultipartFile couvertureFile,
-            Utilisateur bibliothecaire
-    ) throws Exception {
+   public Ressource ajouterRessource(
+        String titre,
+        String auteur,
+        String isbn,
+        TypeRessource typeRessource,
+        TypeCategorie categorie,
+        int quantiteTotale,
+        MultipartFile couvertureFile,
+        Utilisateur bibliothecaire
+) throws Exception {
 
-        Ressource r = new Ressource();
-        r.setTitre(titre);
-        r.setAuteur(auteur);
-        r.setTypeRessource(typeRessource);
-        r.setCategorie(categorie);
-        r.setBibliotheque(bibliothecaire.getBibliotheque());
+    Ressource r = new Ressource();
+    r.setTitre(titre);
+    r.setAuteur(auteur);
+    r.setIsbn(isbn); // ⭐ AJOUT IMPORTANT
+    r.setTypeRessource(typeRessource);
+    r.setCategorie(categorie);
+    r.setBibliotheque(bibliothecaire.getBibliotheque());
+    r.setStatut(StatutRessource.DISPONIBLE);
 
-        // 📸 Upload de la couverture
-        if (couvertureFile != null && !couvertureFile.isEmpty()) {
+    // 📸 Gestion couverture
+    if (couvertureFile != null && !couvertureFile.isEmpty()) {
 
-            String original = couvertureFile.getOriginalFilename();
-            String ext = original.substring(original.lastIndexOf(".")); 
-            String fileName = "cover_" + System.currentTimeMillis() + ext;
+        String original = couvertureFile.getOriginalFilename();
+        String ext = original.substring(original.lastIndexOf("."));
+        String fileName = "cover_" + System.currentTimeMillis() + ext;
 
-            Path dir = Paths.get("uploads/covers");
-            Files.createDirectories(dir);
+        Path dir = Paths.get("uploads/covers");
+        Files.createDirectories(dir);
 
-            Files.copy(
-                    couvertureFile.getInputStream(),
-                    dir.resolve(fileName),
-                    StandardCopyOption.REPLACE_EXISTING
-            );
+        Files.copy(
+                couvertureFile.getInputStream(),
+                dir.resolve(fileName),
+                StandardCopyOption.REPLACE_EXISTING
+        );
 
-            r.setCheminCouverture(fileName);
-        }
-
-        Ressource saved = ressourceRepo.save(r);
-
-        // 📦 Création du stock associé
-        StockBibliotheque stock = new StockBibliotheque();
-        stock.setBibliotheque(bibliothecaire.getBibliotheque());
-        stock.setRessource(saved);
-        stock.setQuantiteTotale(quantiteTotale);
-        stock.setQuantiteDisponible(quantiteTotale);
-
-        stockRepo.save(stock);
-
-        return saved;
+        r.setCheminCouverture(fileName);
     }
+
+    Ressource saved = ressourceRepo.save(r);
+
+    // STOCK
+    StockBibliotheque stock = new StockBibliotheque();
+    stock.setBibliotheque(bibliothecaire.getBibliotheque());
+    stock.setRessource(saved);
+    stock.setQuantiteTotale(quantiteTotale);
+    stock.setQuantiteDisponible(quantiteTotale);
+
+    stockRepo.save(stock);
+
+    return saved;
+}
 
     /* =====================================================
      * 5️⃣ MODIFICATION D’UNE RESSOURCE
@@ -123,7 +154,6 @@ public class RessourceService {
         r.setTypeRessource(typeRessource);
         r.setCategorie(categorie);
 
-        // 📸 Nouvelle couverture ?
         if (couvertureFile != null && !couvertureFile.isEmpty()) {
 
             String ext = couvertureFile.getOriginalFilename()
@@ -142,7 +172,6 @@ public class RessourceService {
             r.setCheminCouverture(fileName);
         }
 
-        // Mise à jour du stock
         StockBibliotheque stock = getStock(r);
 
         int emprunte = stock.getQuantiteEmpruntee();

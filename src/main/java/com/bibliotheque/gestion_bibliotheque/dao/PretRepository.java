@@ -1,7 +1,10 @@
 package com.bibliotheque.gestion_bibliotheque.dao;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,19 +15,59 @@ import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.Bibliotheque;
 import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
 
 public interface PretRepository extends JpaRepository<Pret, Long> {
+ List<Pret> findByLecteur(Utilisateur lecteur);
+   @Query("""
+    SELECT p FROM Pret p
+    WHERE p.lecteur = :lecteur
+      AND p.statut <> 'ANNULE'
+    ORDER BY p.dateReservation DESC
+""")
+Page<Pret> findByLecteur(@Param("lecteur") Utilisateur lecteur, Pageable pageable);
 
-    // 📌 Tous les prêts d’un lecteur
-    List<Pret> findByLecteur(Utilisateur lecteur);
+   @Query("""
+    SELECT p FROM Pret p
+    WHERE p.stockBibliotheque.bibliotheque = :bibliotheque
+      AND p.statut IN :statuts
+""")
+Page<Pret> findPretsByBibliothequeAndStatuts(
+        @Param("bibliotheque") Bibliotheque bibliotheque,
+        @Param("statuts") List<StatutPret> statuts,
+        Pageable pageable
+);
 
-
-    // 📌 Pour bibliothécaire : prêts à gérer
     @Query("""
-        SELECT p FROM Pret p
-        WHERE p.stockBibliotheque.bibliotheque = :bibliotheque
-          AND p.statut IN :statuts
+        SELECT p.ressource.categorie, COUNT(p)
+        FROM Pret p
+        WHERE p.lecteur = :lecteur
+          AND p.statut <> 'ANNULE'
+        GROUP BY p.ressource.categorie
+        ORDER BY COUNT(p) DESC
     """)
-    List<Pret> findPretsByBibliothequeAndStatuts(
-            @Param("bibliotheque") Bibliotheque bibliotheque,
-            @Param("statuts") List<StatutPret> statuts
-    );
+    List<Object[]> getTopCategoriesByLecteur(@Param("lecteur") Utilisateur lecteur);
+
+@Query("""
+    SELECT p FROM Pret p
+    WHERE p.stockBibliotheque.bibliotheque.id = :biblioId
+
+      AND (
+           :keyword IS NULL OR
+           LOWER(p.lecteur.nom) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+           LOWER(p.lecteur.prenom) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+           LOWER(p.ressource.titre) LIKE LOWER(CONCAT('%', :keyword, '%'))
+      )
+
+      AND (:statut IS NULL OR p.statut = :statut)
+
+      AND (:dateMin IS NULL OR p.dateReservation >= :dateMin)
+      AND (:dateMax IS NULL OR p.dateReservation <= :dateMax)
+""")
+Page<Pret> searchPrets(
+        @Param("biblioId") Long bibliothequeId,
+        @Param("keyword") String keyword,
+        @Param("statut") StatutPret statut,
+        @Param("dateMin") LocalDateTime dateMin,
+        @Param("dateMax") LocalDateTime dateMax,
+        Pageable pageable
+);
+
 }

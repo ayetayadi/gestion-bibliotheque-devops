@@ -97,6 +97,12 @@
                         <label>Éditeur</label>
                         <input type="text" name="editeur">
                     </div>
+                    <!-- ISBN (uniquement pour Livre) -->
+<div class="form-group" id="isbnField" style="display:none;">
+    <label>ISBN</label>
+    <input type="text" name="isbn" placeholder="Ex : 978-2-1234-5678-9">
+    <small class="form-hint">Requis pour les livres</small>
+</div>
                 </div>
             </div>
 
@@ -150,22 +156,23 @@
 </main>
 
 <script>
-    function afficherChampsSpecifiques() {
-        const type = document.getElementById("typeRessource").value;
+   function afficherChampsSpecifiques() {
+    const type = document.getElementById("typeRessource").value;
 
-        document.getElementById("fieldsLivre").style.display = "none";
-        document.getElementById("fieldsMedia").style.display = "none";
-        document.getElementById("fieldsDoc").style.display = "none";
+    document.getElementById("fieldsLivre").style.display = "none";
+    document.getElementById("fieldsMedia").style.display = "none";
+    document.getElementById("fieldsDoc").style.display = "none";
+    document.getElementById("isbnField").style.display = "none";
 
-        if (type === "LIVRE") {
-            document.getElementById("fieldsLivre").style.display = "block";
-        } else if (type === "MEDIA") {
-            document.getElementById("fieldsMedia").style.display = "block";
-        } else if (type === "DOCUMENT_NUMERIQUE") {
-            document.getElementById("fieldsDoc").style.display = "block";
-        }
+    if (type === "LIVRE") {
+        document.getElementById("fieldsLivre").style.display = "block";
+        document.getElementById("isbnField").style.display = "block";
+    } else if (type === "MEDIA") {
+        document.getElementById("fieldsMedia").style.display = "block";
+    } else if (type === "DOCUMENT_NUMERIQUE") {
+        document.getElementById("fieldsDoc").style.display = "block";
     }
-
+}
     // Afficher par défaut (LIVRE)
     afficherChampsSpecifiques();
 </script>

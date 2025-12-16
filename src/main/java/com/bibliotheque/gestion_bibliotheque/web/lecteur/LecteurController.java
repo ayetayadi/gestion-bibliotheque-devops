@@ -1,5 +1,6 @@
 package com.bibliotheque.gestion_bibliotheque.web.lecteur;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -17,7 +18,6 @@ import com.bibliotheque.gestion_bibliotheque.security.UserDetailsImpl;
 import com.bibliotheque.gestion_bibliotheque.entities.pret.StatutPret;
 
 import lombok.RequiredArgsConstructor;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/lecteur")
@@ -30,48 +30,55 @@ public class LecteurController {
     private final RessourceService ressourceService;
 
     // 1️⃣ Réserver une ressource
-    @PostMapping("/prets/reserver/{id}")
-    public String reserver(@PathVariable Long id,
-                           @AuthenticationPrincipal UserDetailsImpl userDetails,
-                           RedirectAttributes redirectAttrs) {
+@PostMapping("/prets/reserver/{id}")
+public String reserver(@PathVariable Long id,
+                       @AuthenticationPrincipal UserDetailsImpl userDetails,
+                       RedirectAttributes redirectAttrs) {
 
-        if (userDetails == null) return "redirect:/login";
+    if (userDetails == null) return "redirect:/login";
 
-        Utilisateur lecteur = userDetails.getUtilisateur();
+    Utilisateur lecteur = userDetails.getUtilisateur();
 
-        try {
-            Ressource res = ressourceService.getById(id);
-            StockBibliotheque stock = ressourceService.getStock(res);
+    try {
+        Ressource res = ressourceService.getById(id);
+        StockBibliotheque stock = ressourceService.getStock(res);
 
-            // ✅ Appel corrigé : uniquement 3 arguments
-            pretWorkflowService.reserverRessource(lecteur, res, stock);
+        pretWorkflowService.reserverRessource(lecteur, res, stock);
 
-            redirectAttrs.addFlashAttribute("success", "Réservation effectuée !");
-        } catch (Exception e) {
-            redirectAttrs.addFlashAttribute("error", e.getMessage());
-        }
-
-        return "redirect:/catalogue";
+        redirectAttrs.addFlashAttribute("success", "Réservation effectuée !");
+    } catch (Exception e) {
+        redirectAttrs.addFlashAttribute("error", e.getMessage());
     }
+
+    return "redirect:/catalogue";
+}
 
     // 2️⃣ Afficher mes prêts (exclure les réservations annulées)
-    @GetMapping("/prets")
-    public String mesPrets(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                           Model model) {
+@GetMapping("/prets")
+public String mesPrets(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestParam(defaultValue = "0") int page,
+        Model model) {
 
-        if (userDetails == null) return "redirect:/login";
+    if (userDetails == null) return "redirect:/login";
 
-        Utilisateur lecteur = userDetails.getUtilisateur();
+    Utilisateur lecteur = userDetails.getUtilisateur();
 
-        var prets = pretRepository.findByLecteur(lecteur)
-                        .stream()
-                        .filter(p -> p.getStatut() != null && p.getStatut() != StatutPret.ANNULE)
-                        .collect(Collectors.toList());
+    // Page = 6 éléments par page
+    var pageable = PageRequest.of(page, 6);
 
-        model.addAttribute("prets", prets);
+    var pretsPage = pretRepository.findByLecteur(lecteur, pageable);
 
-        return "lecteur/mes-prets";
-    }
+    // Exclure ANNULE
+    var filteredPage = pretsPage.map(p -> p)
+            .filter(p -> p.getStatut() != StatutPret.ANNULE);
+
+    model.addAttribute("page", pretsPage);
+    model.addAttribute("prets", pretsPage.getContent());
+    model.addAttribute("baseUrl", "/lecteur/prets");
+
+    return "lecteur/mes-prets";
+}
 
     // 3️⃣ Annuler une réservation
     @PostMapping("/prets/annuler/{id}")

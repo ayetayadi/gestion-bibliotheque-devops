@@ -7,6 +7,7 @@ import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -23,10 +24,8 @@ public class UtilisateurService {
     private final UtilisateurRepository utilisateurRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UtilisateurService(
-            UtilisateurRepository utilisateurRepository,
-            PasswordEncoder passwordEncoder
-    ) {
+    public UtilisateurService(UtilisateurRepository utilisateurRepository,
+                              PasswordEncoder passwordEncoder) {
         this.utilisateurRepository = utilisateurRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -66,6 +65,21 @@ public class UtilisateurService {
         return utilisateurRepository.findByRole(Role.ADMIN, pageable);
     }
 
+      public Page<Utilisateur> searchAdmins(
+            String keyword,
+            Long biblioId,
+            Boolean statut,
+            Pageable pageable
+    ) {
+        if (keyword != null && keyword.isBlank()) keyword = null;
+
+        return utilisateurRepository.searchAdmins(
+                keyword,
+                biblioId,
+                statut,
+                pageable
+        );
+    }
     public void creerAdministrateur(Utilisateur admin) {
 
         if (utilisateurRepository.existsByEmail(admin.getEmail())) {
@@ -110,70 +124,92 @@ public class UtilisateurService {
         utilisateurRepository.save(admin);
     }
 
-     public void activerAdmin(Long id) {
+    public void activerAdmin(Long id) {
+        Utilisateur admin = getById(id);
 
-    Utilisateur admin = getById(id);
+        if (admin.getBibliotheque() != null && !admin.getBibliotheque().isActif()) {
+            throw new IllegalStateException(
+                "Impossible d’activer cet administrateur : la bibliothèque est désactivée."
+            );
+        }
 
-    if (admin.getBibliotheque() != null && !admin.getBibliotheque().isActif()) {
-        throw new IllegalStateException(
-            "Impossible d’activer cet administrateur : la bibliothèque associée est désactivée. " +
-            "Veuillez d’abord réactiver la bibliothèque."
-        );
+        admin.setActif(true);
+        utilisateurRepository.save(admin);
     }
 
-    admin.setActif(true);
-    utilisateurRepository.save(admin);
+    // ================= BIBLIOTHÉCAIRE =================
+    public Utilisateur creerBibliothecaire(Utilisateur biblio, Utilisateur admin) {
+
+        // Vérif email
+        if (utilisateurRepository.existsByEmail(biblio.getEmail())) {
+            throw new RuntimeException("Cet email est déjà utilisé.");
+        }
+
+        try {
+            biblio.setRole(Role.BIBLIOTHECAIRE);
+            biblio.setActif(true);
+            biblio.setBibliotheque(admin.getBibliotheque());
+            biblio.setMotDePasse(passwordEncoder.encode(biblio.getMotDePasse()));
+
+            return utilisateurRepository.save(biblio);
+
+        } catch (DataIntegrityViolationException ex) {
+            throw new RuntimeException("Cet email est déjà utilisé.");
+        }
+    }
+
+    public Page<Utilisateur> searchBibliothecaires(
+        Long biblioId,
+        String keyword,
+        Boolean statut,
+        Pageable pageable
+) {
+    if (keyword != null && keyword.isBlank()) keyword = null;
+
+    return utilisateurRepository.searchBibliothecaires(
+            biblioId,
+            keyword,
+            statut,
+            pageable
+    );
 }
 
+    public Utilisateur updateBibliothecaire(Utilisateur updated, Utilisateur admin) {
 
-    // ================= BIBLIOTHECAIRE =================
-    public Utilisateur creerBibliothecaire(Utilisateur bibliothecaire, Utilisateur adminConnecte) {
+        Utilisateur original = utilisateurRepository.findById(updated.getId())
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
-        bibliothecaire.setRole(Role.BIBLIOTHECAIRE);
-        bibliothecaire.setActif(true);
-        bibliothecaire.setBibliotheque(adminConnecte.getBibliotheque());
-        bibliothecaire.setMotDePasse(passwordEncoder.encode(bibliothecaire.getMotDePasse()));
+        // Vérif même bibliothèque
+        if (!original.getBibliotheque().getId().equals(admin.getBibliotheque().getId())) {
+            throw new RuntimeException("Accès refusé");
+        }
 
-        return utilisateurRepository.save(bibliothecaire);
+        // Vérif email unique
+        if (!original.getEmail().equals(updated.getEmail())) {
+            if (utilisateurRepository.findByEmail(updated.getEmail()).isPresent()) {
+                throw new RuntimeException("Cet email est déjà utilisé.");
+            }
+        }
+
+        original.setNom(updated.getNom());
+        original.setPrenom(updated.getPrenom());
+        original.setEmail(updated.getEmail());
+        original.setActif(updated.isActif());
+
+        try {
+            return utilisateurRepository.save(original);
+        } catch (DataIntegrityViolationException ex) {
+            throw new RuntimeException("Cet email est déjà utilisé.");
+        }
     }
 
-    public Page<Utilisateur> getBibliothecairesPaged(
-            Long bibliothequeId,
-            Pageable pageable
-    ) {
+    public Page<Utilisateur> getBibliothecairesPaged(Long bibliothequeId, Pageable pageable) {
         return utilisateurRepository.findByRoleAndBibliothequeId(
                 Role.BIBLIOTHECAIRE,
                 bibliothequeId,
                 pageable
         );
     }
-
-    // ================= UPDATE BIBLIOTHÉCAIRE =================
-public void updateBibliothecaire(Utilisateur form, Utilisateur adminConnecte) {
-
-    Utilisateur biblio = getById(form.getId());
-
-    // 🔒 Sécurité : même bibliothèque
-    if (!biblio.getBibliotheque().getId()
-            .equals(adminConnecte.getBibliotheque().getId())) {
-        throw new RuntimeException("Accès interdit");
-    }
-
-    // 🔥 Email unique
-    utilisateurRepository.findByEmail(form.getEmail())
-            .ifPresent(existing -> {
-                if (!existing.getId().equals(biblio.getId())) {
-                    throw new IllegalArgumentException("Email déjà utilisé");
-                }
-            });
-
-    // ✏️ Mise à jour autorisée
-    biblio.setNom(form.getNom());
-    biblio.setPrenom(form.getPrenom());
-    biblio.setEmail(form.getEmail());
-    biblio.setActif(form.isActif());
-    utilisateurRepository.save(biblio);
-}
 
     public void desactiverBibliothecaire(Long id, Utilisateur adminConnecte) {
 
@@ -188,52 +224,45 @@ public void updateBibliothecaire(Utilisateur form, Utilisateur adminConnecte) {
         utilisateurRepository.save(biblio);
     }
 
-   public void activerBibliothecaire(Long id, Utilisateur adminConnecte) {
+    public void activerBibliothecaire(Long id, Utilisateur adminConnecte) {
 
-    Utilisateur biblio = getById(id);
+        Utilisateur biblio = getById(id);
 
-    // 🔒 Sécurité : même bibliothèque
-    if (!biblio.getBibliotheque().getId()
-            .equals(adminConnecte.getBibliotheque().getId())) {
-        throw new RuntimeException("Accès interdit");
-    }
-
-    // 🔥 RÈGLE MÉTIER
-    if (!biblio.getBibliotheque().isActif()) {
-        throw new IllegalStateException(
-            "Impossible d’activer ce bibliothécaire : la bibliothèque est désactivée."
-        );
-    }
-
-    biblio.setActif(true);
-    utilisateurRepository.save(biblio);
-}
-
-    public void desactiverUtilisateursDeBibliotheque(Bibliotheque bibliotheque) {
-
-    utilisateurRepository.findByBibliothequeId(bibliotheque.getId())
-            .forEach(u -> {
-                u.setActif(false);
-                utilisateurRepository.save(u);
-            });
+        if (!biblio.getBibliotheque().getId()
+                .equals(adminConnecte.getBibliotheque().getId())) {
+            throw new RuntimeException("Accès interdit");
         }
+
+        if (!biblio.getBibliotheque().isActif()) {
+            throw new IllegalStateException(
+                "Impossible d’activer ce bibliothécaire : la bibliothèque est désactivée."
+            );
+        }
+
+        biblio.setActif(true);
+        utilisateurRepository.save(biblio);
+    }
+
+    // ================= BIBLIOTHÈQUES → ACTIVER / DÉSACTIVER UTILISATEURS =================
+    public void desactiverUtilisateursDeBibliotheque(Bibliotheque bibliotheque) {
+        utilisateurRepository.findByBibliothequeId(bibliotheque.getId())
+                .forEach(u -> {
+                    u.setActif(false);
+                    utilisateurRepository.save(u);
+                });
+    }
 
     public void activerUtilisateursDeBibliotheque(Bibliotheque bibliotheque) {
-
-    utilisateurRepository.findByBibliothequeId(bibliotheque.getId())
-            .forEach(u -> {
-                u.setActif(true);
-                utilisateurRepository.save(u);
-            });
-        }
-
+        utilisateurRepository.findByBibliothequeId(bibliotheque.getId())
+                .forEach(u -> {
+                    u.setActif(true);
+                    utilisateurRepository.save(u);
+                });
+    }
 
     // ================= PROFIL =================
-    public void updateProfile(
-            String currentEmail,
-            Utilisateur form,
-            MultipartFile photoFile
-    ) throws Exception {
+    public void updateProfile(String currentEmail, Utilisateur form, MultipartFile photoFile)
+            throws Exception {
 
         Utilisateur user = getByEmail(currentEmail);
 

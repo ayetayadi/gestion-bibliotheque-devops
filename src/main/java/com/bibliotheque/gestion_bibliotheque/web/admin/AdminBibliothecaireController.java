@@ -25,25 +25,37 @@ public class AdminBibliothecaireController {
     }
 
     // ======================= LISTE =======================
-   @GetMapping
+@GetMapping
 public String list(
         Principal principal,
         @RequestParam(defaultValue = "0") int page,
+        @RequestParam(required = false) String keyword,
+        @RequestParam(required = false) Boolean statut,
         Model model
 ) {
     Utilisateur admin = utilisateurService.getByEmail(principal.getName());
 
     Page<Utilisateur> result =
-            utilisateurService.getBibliothecairesPaged(
+            utilisateurService.searchBibliothecaires(
                     admin.getBibliotheque().getId(),
+                    keyword,
+                    statut,
                     PageRequest.of(page, 5)
             );
 
     model.addAttribute("items", result.getContent());
     model.addAttribute("page", result);
 
-    // 🆕 AJOUT : envoyer la bibliothèque au template
     model.addAttribute("bibliotheque", admin.getBibliotheque());
+
+    // valeurs dans les champs
+    model.addAttribute("keyword", keyword);
+    model.addAttribute("selectedStatut", statut);
+
+    model.addAttribute("baseUrl",
+            "/admin/bibliothecaires?keyword=" + (keyword != null ? keyword : "")
+                    + "&statut=" + (statut != null ? statut : "")
+    );
 
     return "utilisateur/bibliothecaire/list";
 }
@@ -56,19 +68,24 @@ public String list(
     }
 
     // ======================= CREATE =======================
-    @PostMapping("/add")
-    public String create(
-            @ModelAttribute Utilisateur bibliothecaire,
-            Principal principal,
-            RedirectAttributes redirectAttributes
-    ) {
-        Utilisateur admin = utilisateurService.getByEmail(principal.getName());
+  @PostMapping("/add")
+public String create(
+        @ModelAttribute Utilisateur bibliothecaire,
+        Principal principal,
+        RedirectAttributes redirectAttributes
+) {
+    Utilisateur admin = utilisateurService.getByEmail(principal.getName());
 
+    try {
         utilisateurService.creerBibliothecaire(bibliothecaire, admin);
-
         redirectAttributes.addFlashAttribute("success", "Bibliothécaire ajouté avec succès");
-        return "redirect:/admin/bibliothecaires";
+    } catch (Exception e) {
+        redirectAttributes.addFlashAttribute("error", e.getMessage());
+        return "redirect:/admin/bibliothecaires/add";
     }
+
+    return "redirect:/admin/bibliothecaires";
+}
 
     // ======================= FORM EDIT =======================
     @GetMapping("/edit/{id}")
@@ -89,18 +106,25 @@ public String list(
     }
 
     // ======================= UPDATE =======================
-    @PostMapping("/edit")
-    public String update(
-            @ModelAttribute Utilisateur bibliothecaire,
-            Principal principal,
-            RedirectAttributes redirectAttributes
-    ) {
-        Utilisateur admin = utilisateurService.getByEmail(principal.getName());
-        utilisateurService.updateBibliothecaire(bibliothecaire, admin);
+@PostMapping("/edit")
+public String update(
+        @ModelAttribute Utilisateur bibliothecaire,
+        Principal principal,
+        RedirectAttributes redirectAttributes
+) {
+    Utilisateur admin = utilisateurService.getByEmail(principal.getName());
 
+    try {
+        utilisateurService.updateBibliothecaire(bibliothecaire, admin);
         redirectAttributes.addFlashAttribute("success", "Bibliothécaire modifié avec succès");
-        return "redirect:/admin/bibliothecaires";
+    } catch (Exception e) {
+        redirectAttributes.addFlashAttribute("error", e.getMessage());
+        return "redirect:/admin/bibliothecaires/edit/" + bibliothecaire.getId();
     }
+
+    return "redirect:/admin/bibliothecaires";
+}
+
 
     @GetMapping("/changer-statut/{id}")
 public String changerStatut(

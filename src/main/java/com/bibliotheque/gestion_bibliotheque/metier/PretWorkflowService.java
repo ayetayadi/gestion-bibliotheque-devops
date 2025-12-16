@@ -2,6 +2,8 @@ package com.bibliotheque.gestion_bibliotheque.metier;
 
 import java.time.LocalDateTime;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -16,7 +18,10 @@ import com.bibliotheque.gestion_bibliotheque.entities.ressource.Ressource;
 import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -24,15 +29,39 @@ public class PretWorkflowService {
 
     private final PretRepository pretRepository;
     private final StockBibliothequeRepository stockRepository;
-    private final JavaMailSender mailSender; // Injection de Spring Mail
+    private final JavaMailSender mailSender;
 
-    // 1️⃣ RÉSERVER UNE RESSOURCE
-    public Pret reserverRessource(Utilisateur lecteur, Ressource ressource,
-                                  StockBibliotheque stock) {
-        if (stock.getQuantiteDisponible() <= 0) {
-            throw new IllegalStateException("Aucun exemplaire disponible pour cette ressource.");
+    // 1️⃣ RÉSERVER UNE RESSOURCE — VERSION FIXÉE
+    public Pret reserverRessource(Utilisateur lecteur, Ressource ressource, StockBibliotheque stock) {
+
+        log.info("🆕 Tentative reservation: lecteur={}, ressource={}",
+                lecteur.getEmail(), ressource.getId());
+
+        // ❌ Vérifier si déjà réservé / emprunté
+        boolean dejaReserve = pretRepository.findByLecteur(lecteur).stream()
+                .anyMatch(p ->
+                        p.getRessource().getId().equals(ressource.getId()) &&
+                        (p.getStatut() == StatutPret.RESERVE ||
+                         p.getStatut() == StatutPret.EMPRUNTE ||
+                         p.getStatut() == StatutPret.EN_COURS)
+                );
+
+        log.info("🔎 Déjà réservé ? {}", dejaReserve);
+
+        if (dejaReserve) {
+            throw new IllegalStateException("Vous avez déjà réservé ou emprunté cette ressource.");
         }
 
+        if (stock.getQuantiteDisponible() <= 0) {
+            throw new IllegalStateException("Aucun exemplaire disponible.");
+        }
+
+        // 🔹 Mise à jour du stock
+        stock.setQuantiteReservee(stock.getQuantiteReservee() + 1);
+        stock.setQuantiteDisponible(stock.getQuantiteDisponible() - 1);
+        stockRepository.saveAndFlush(stock);
+
+        // 🔹 Création du prêt
         Pret pret = new Pret();
         pret.setLecteur(lecteur);
         pret.setRessource(ressource);
@@ -40,15 +69,12 @@ public class PretWorkflowService {
         pret.setDateReservation(LocalDateTime.now());
         pret.setStatut(StatutPret.RESERVE);
 
-        pretRepository.save(pret);
+        pretRepository.saveAndFlush(pret);
+log.info("After reservation: disponible={}, reservee={}",
+        stock.getQuantiteDisponible(),
+        stock.getQuantiteReservee());
 
-        // Notification email au lecteur
-        sendEmail(
-                lecteur.getEmail(),
-                "Réservation confirmée",
-                "Bonjour " + lecteur.getNom() + ",\n\nVotre réservation pour \"" +
-                        ressource.getTitre() + "\" a été effectuée avec succès.\n\nMerci,\nBiblioNet"
-        );
+        log.info("✅ Réservation réussie : pretID={}", pret.getId());
 
         return pret;
     }
@@ -169,20 +195,40 @@ public class PretWorkflowService {
         return pret;
     }
 
-    // 🔹 Méthode utilitaire pour récupérer un prêt
-    private Pret getPretOrThrow(Long id) {
+     private Pret getPretOrThrow(Long id) {
         return pretRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Prêt introuvable."));
     }
 
-    // 🔹 Méthode utilitaire pour envoyer les emails
     private void sendEmail(String to, String subject, String body) {
-        if (to == null || to.isBlank()) return; // ignore si email manquant
+        if (to == null || to.isBlank()) return;
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("bannermanagement01@gmail.com"); // email principal
+        message.setFrom("bannermanagement01@gmail.com");
         message.setTo(to);
         message.setSubject(subject);
         message.setText(body);
         mailSender.send(message);
     }
+
+    public Page<Pret> searchPretsBibliotheque(
+        Long biblioId,
+        String keyword,
+        String statut,
+        String dateDebut,
+        String dateFin,
+        Pageable pageable
+) {
+    if (keyword != null && keyword.isBlank()) keyword = null;
+    if (statut != null && statut.isBlank()) statut = null;
+
+    return pretRepository.searchPrets(
+            biblioId,
+            keyword,
+            statut != null ? StatutPret.valueOf(statut) : null,
+            dateDebut,
+            dateFin,
+            pageable
+    );
+}
+
 }

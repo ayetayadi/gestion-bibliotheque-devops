@@ -2,6 +2,9 @@ package com.bibliotheque.gestion_bibliotheque.web.superadmin;
 
 import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.Bibliotheque;
 import com.bibliotheque.gestion_bibliotheque.metier.BibliothequeService;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,10 +24,34 @@ public class SuperAdminBibliothequeController {
 
     // ================= LISTE =================
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("bibliotheques", bibliothequeService.getAll());
-        return "bibliotheque/list";
-    }
+public String list(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(required = false) String keyword,
+        @RequestParam(required = false) String statut,
+        Model model
+) {
+
+    Page<Bibliotheque> bibliotheques = bibliothequeService.search(
+            keyword,
+            statut,
+            PageRequest.of(page, 8)
+    );
+
+    model.addAttribute("bibliotheques", bibliotheques.getContent());
+    model.addAttribute("page", bibliotheques);
+
+    // garder les filtres dans le formulaire
+    model.addAttribute("keyword", keyword);
+    model.addAttribute("statut", statut);
+
+    // URL pagination
+    model.addAttribute("baseUrl",
+            "bibliotheque/list?keyword=" + (keyword != null ? keyword : "")
+            + "&statut=" + (statut != null ? statut : "")
+    );
+
+    return "bibliotheque/list";
+}
 
     // ================= VIEW =================
     @GetMapping("/{id}")
