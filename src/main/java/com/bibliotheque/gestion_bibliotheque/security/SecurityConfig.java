@@ -16,20 +16,21 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-            // ⚠️ CSRF désactivé (acceptable pour projet académique)
+
             .csrf(csrf -> csrf.disable())
 
             .authorizeHttpRequests(auth -> auth
 
-                // ================= PUBLIC =================
+
                 .requestMatchers(
-                        "/",
-                        "/login",
-                        "/register",
-                        "/css/**",
-                        "/js/**",
-                        "/images/**"
+                    "/",
+                    "/login",
+                    "/register",
+                    "/css/**",
+                    "/js/**",
+                    "/images/**"
                 ).permitAll()
+
 
                 // ================= LECTEUR =================
                 .requestMatchers("/catalogue/**").hasRole("LECTEUR")
@@ -60,10 +61,11 @@ public class SecurityConfig {
             )
 
             // ================= LOGOUT =================
+
             .logout(logout -> logout
-                    .logoutUrl("/logout")
-                    .logoutSuccessUrl("/login?logout=true")
-                    .permitAll()
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login?logout=true")
+                .permitAll()
             );
 
         return http.build();

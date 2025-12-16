@@ -75,12 +75,15 @@
                 <div class="form-group">
                     <label>Couverture actuelle</label>
                     <div th:if="${ressource.cheminCouverture != null}">
-                        <img th:src="@{'/uploads/covers/' + ${ressource.cheminCouverture}}"
-                             style="width:120px;border-radius:4px;">
-                    </div>
-                    <div th:if="${ressource.cheminCouverture == null}">
-                        <p class="text-muted">Aucune image</p>
-                    </div>
+  <div th:if="${ressource.cheminCouverture != null}">
+    <img th:src="${#strings.startsWith(ressource.cheminCouverture, 'http') 
+                 ? ressource.cheminCouverture 
+                 : '/uploads/covers/' + ressource.cheminCouverture}"
+         style="width:120px;border-radius:4px;">
+</div>
+
+<div th:if="${ressource.cheminCouverture == null}" class="no-cover">📘</div>
+
                 </div>
 
                 <!-- NOUVELLE COUVERTURE -->

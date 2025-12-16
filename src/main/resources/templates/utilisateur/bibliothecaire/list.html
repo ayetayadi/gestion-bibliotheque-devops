@@ -11,7 +11,14 @@
 <div th:replace="layout/sidebar :: sidebar"></div>
 
 <main class="content">
+    <!-- ALERTS -->
+    <div th:if="${success}" class="alert alert-success auto-hide">
+        <span th:text="${success}"></span>
+    </div>
 
+    <div th:if="${error}" class="alert alert-error auto-hide">
+        <span th:text="${error}"></span>
+    </div>
     <!-- PAGE HEADER -->
 <div class="page-header">
     <div>
@@ -28,15 +35,26 @@
             ➕ Ajouter un bibliothécaire
         </a>
     </div>
+<!-- ======================= FILTRES ======================= -->
+     <form method="get" action="/admin/bibliothecaires" class="filter-bar">
 
-    <!-- ALERTS -->
-    <div th:if="${success}" class="alert alert-success auto-hide">
-        <span th:text="${success}"></span>
-    </div>
+    <input type="text"
+           name="keyword"
+           placeholder="Rechercher nom, prénom ou email..."
+           th:value="${keyword}">
 
-    <div th:if="${error}" class="alert alert-error auto-hide">
-        <span th:text="${error}"></span>
-    </div>
+
+    <select name="statut">
+        <option value="">Statut</option>
+        <option value="true" th:selected="${selectedStatut == true}">Actif</option>
+        <option value="false" th:selected="${selectedStatut == false}">Inactif</option>
+    </select>
+
+    <button class="btn-primary" type="submit">🔍 Filtrer</button>
+                            <a th:href="@{/admin/bibliothecaires}" class="btn btn-secondary">⟲ Réinitialiser</a>
+    
+</form>
+
 
     <!-- TABLE -->
     <div class="card">
@@ -98,6 +116,7 @@
 </table>
 
     </div>
+        <div th:replace="fragments/pagination :: pagination(page=${page}, baseUrl='/super-admin/admins')"></div>
 
 </main>
 

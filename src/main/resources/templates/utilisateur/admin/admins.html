@@ -21,6 +21,33 @@
 
         <a th:href="@{/super-admin/admins/add}" class="btn btn-primary">➕ Ajouter un administrateur</a>
     </div>
+<!-- ==================== BARRE DE RECHERCHE & FILTRES ==================== -->
+<form method="get" action="/super-admin/admins" class="filter-bar">
+
+    <input type="text"
+           name="keyword"
+           placeholder="Rechercher nom, prénom ou email..."
+           th:value="${keyword}">
+
+    <select name="biblioId">
+        <option value="">Toutes les bibliothèques</option>
+        <option th:each="b : ${bibliotheques}"
+                th:value="${b.id}"
+                th:selected="${b.id == selectedBiblio}"
+                th:text="${b.nom}">
+        </option>
+    </select>
+
+    <select name="statut">
+        <option value="">Statut</option>
+        <option value="true" th:selected="${selectedStatut == true}">Actif</option>
+        <option value="false" th:selected="${selectedStatut == false}">Inactif</option>
+    </select>
+
+    <button class="btn-primary" type="submit">🔍 Filtrer</button>
+                        <a th:href="@{/super-admin/admins}" class="btn btn-secondary">⟲ Réinitialiser</a>
+    
+</form>
 
     <div class="card">
         <table class="table">

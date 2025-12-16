@@ -1,7 +1,6 @@
 package com.bibliotheque.gestion_bibliotheque.web.lecteur;
 
-import java.util.stream.Collectors;
-
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -30,16 +29,19 @@ public class LecteurController {
     private final PretRepository pretRepository;
     private final RessourceService ressourceService;
 
+    // 1️⃣ Réserver une ressource
     @PostMapping("/prets/reserver/{id}")
-    public String reserver(@PathVariable Long id,
-                           @AuthenticationPrincipal UserDetailsImpl userDetails,
-                           RedirectAttributes redirectAttrs) {
+    public String reserver(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            RedirectAttributes redirectAttrs) {
 
         Utilisateur lecteur = userDetails.getUtilisateur();
 
         try {
             Ressource res = ressourceService.getById(id);
             StockBibliotheque stock = ressourceService.getStock(res);
+
             pretWorkflowService.reserverRessource(lecteur, res, stock);
             redirectAttrs.addFlashAttribute("success", "Réservation effectuée !");
         } catch (Exception e) {
@@ -49,24 +51,40 @@ public class LecteurController {
         return "redirect:/catalogue";
     }
 
+    // 2️⃣ Afficher mes prêts
     @GetMapping("/prets")
-    public String mesPrets(@AuthenticationPrincipal UserDetailsImpl userDetails, Model model) {
+    public String mesPrets(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            Model model) {
+
+        if (userDetails == null) {
+            return "redirect:/login";
+        }
 
         Utilisateur lecteur = userDetails.getUtilisateur();
+        var pageable = PageRequest.of(page, 6);
 
-        var prets = pretRepository.findByLecteur(lecteur)
-                .stream()
+        var pretsPage = pretRepository.findByLecteur(lecteur, pageable);
+
+        // Exclure ANNULE correctement
+        var filtered = pretsPage.stream()
                 .filter(p -> p.getStatut() != StatutPret.ANNULE)
-                .collect(Collectors.toList());
+                .toList();
 
-        model.addAttribute("prets", prets);
+        model.addAttribute("page", pretsPage);
+        model.addAttribute("prets", filtered);
+        model.addAttribute("baseUrl", "/lecteur/prets");
+
         return "lecteur/mes-prets";
     }
 
+    // 3️⃣ Annuler une réservation
     @PostMapping("/prets/annuler/{id}")
-    public String annulerReservation(@PathVariable Long id,
-                                     @AuthenticationPrincipal UserDetailsImpl userDetails,
-                                     RedirectAttributes redirectAttrs) {
+    public String annulerReservation(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            RedirectAttributes redirectAttrs) {
 
         try {
             pretWorkflowService.annulerReservation(id, userDetails.getUtilisateur());
@@ -78,10 +96,12 @@ public class LecteurController {
         return "redirect:/lecteur/prets";
     }
 
+    // 4️⃣ Retourner une ressource
     @PostMapping("/prets/retourner/{id}")
-    public String retournerPret(@PathVariable Long id,
-                                @AuthenticationPrincipal UserDetailsImpl userDetails,
-                                RedirectAttributes redirectAttrs) {
+    public String retournerPret(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            RedirectAttributes redirectAttrs) {
 
         try {
             pretWorkflowService.retournerPret(id, userDetails.getUtilisateur());

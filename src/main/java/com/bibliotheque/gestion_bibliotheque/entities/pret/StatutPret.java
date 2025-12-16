@@ -6,5 +6,5 @@ public enum StatutPret {
     EN_COURS,
     RETOURNE,
     CLOTURE,
-    ANNULE   // ⭐ OBLIGATOIRE !
+    ANNULE 
 }

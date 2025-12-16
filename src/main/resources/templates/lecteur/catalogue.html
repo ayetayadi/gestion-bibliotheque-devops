@@ -4,78 +4,199 @@
     <meta charset="UTF-8">
     <title>Catalogue</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
-
-   
 </head>
 
 <body>
 
+<!-- HEADER & SIDEBAR -->
 <div th:replace="layout/header :: header"></div>
 <div th:replace="layout/sidebar :: sidebar"></div>
 
 <main class="content">
-<div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
-    <h2>📚 Catalogue complet</h2>
-    <p class="text-muted">Toutes les ressources disponibles dans les bibliothèques</p>
+    <!-- ALERTES -->
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+<!-- ===================== SECTION RECOMMANDATIONS ====================== -->
+<div th:if="${recommandations != null and !recommandations.isEmpty()}">
+    <h2>✨ Recommandations pour vous</h2>
 
     <div class="catalogue-grid">
 
-        <div class="book-card"
-             th:each="r : ${ressources}"
-             th:with="s=${stocks[r.id]}">
+        <th:block th:each="r : ${recommandations}">
+            <div class="book-card" th:with="s=${stocks[r.id]}">
 
-            <!-- Image de couverture -->
-            <div class="book-img">
-                <span class="badge-stock"
-                      th:text="${s.quantiteDisponible + '/' + s.quantiteTotale}">
-                </span>
+                <div class="book-img">
+                    <span th:if="${s != null}"
+                          class="badge-stock"
+                          th:text="${s.quantiteDisponible} + ' / ' + ${s.quantiteTotale}"></span>
 
-                <img th:if="${r.cheminCouverture != null}"
-                     th:src="@{'/uploads/covers/' + ${r.cheminCouverture}}">
+                    <span th:if="${s == null}" class="badge-stock text-muted">N/A</span>
 
-                <img th:if="${r.cheminCouverture == null}"
-                     src="https://via.placeholder.com/300x180?text=Couverture">
-            </div>
+                    <img th:if="${r.cheminCouverture != null}"
+                         th:src="${#strings.startsWith(r.cheminCouverture,'http')
+                                ? r.cheminCouverture
+                                : '/uploads/covers/' + r.cheminCouverture}">
 
-            <!-- Contenu -->
-            <div class="book-body">
-                <h3 th:text="${r.titre}" style="margin-bottom:4px;"></h3>
-                <p th:text="${r.auteur}" style="color:#333;"></p>
-
-                <div class="info-box">
-                    <strong>Catégorie :</strong>
-                    <span th:text="${r.categorie}"></span><br>
-
-                    <strong>Type :</strong>
-                    <span th:text="${r.typeRessource}"></span><br>
-
-                    <strong>Bibliothèque :</strong>
-                    <span th:text="${r.bibliotheque.nom}"></span>
+                    <img th:if="${r.cheminCouverture == null}"
+                         src="https://via.placeholder.com/300x180?text=Couverture">
                 </div>
 
-                <!-- Bouton réserver -->
-    <form th:if="${s.quantiteDisponible > 0}"
-      th:action="@{/lecteur/prets/reserver/{id}(id=${r.id})}"
-      method="post">
-    <button type="submit" class="btn-reserver">Réserver</button>
-</form>
+                <div class="book-body">
+                    <h3 th:text="${r.titre}"></h3>
+                    <p th:text="${r.auteur}"></p>
 
+                    <!-- 🟦 Déjà réservé -->
+                    <button th:if="${reservees.contains(r.id)}"
+                            class="btn-reserver reserved"
+                            disabled>
+                        Réservé ✔
+                    </button>
 
+                    <!-- 🟩 Disponible -->
+                    <form th:if="${!reservees.contains(r.id)
+                                   and s != null
+                                   and s.quantiteDisponible > 0}"
+                          th:action="@{/lecteur/prets/reserver/{id}(id=${r.id})}"
+                          method="post">
+                        <button type="submit" class="btn-reserver">
+                            Réserver
+                        </button>
+                    </form>
 
-                <button th:if="${s.quantiteDisponible == 0}"
-                        disabled
-                        class="btn-reserver">
-                    Indisponible
-                </button>
+                    <!-- 🟥 Indisponible -->
+                    <button th:if="${s == null or s.quantiteDisponible == 0}"
+                            class="btn-reserver"
+                            disabled>
+                        Indisponible
+                    </button>
+                </div>
 
             </div>
-        </div>
+        </th:block>
+
+    </div>
+</div>
+
+
+
+
+
+    <!-- ===================== CATALOGUE COMPLET ====================== -->
+    <h2>📚 Catalogue complet</h2>
+    <p class="text-muted">Toutes les ressources disponibles</p>
+
+    <!-- BARRE DE FILTRES -->
+    <form method="get" action="/catalogue" class="filter-bar">
+
+        <input type="text" name="keyword" placeholder="Rechercher..."
+               th:value="${keyword}"/>
+
+        <select name="categorie">
+            <option value="">Catégorie</option>
+            <option th:each="c : ${categories}"
+                    th:value="${c}"
+                    th:selected="${c == selectedCategorie}"
+                    th:text="${c}">
+            </option>
+        </select>
+
+        <select name="type">
+            <option value="">Type</option>
+            <option th:each="t : ${types}"
+                    th:value="${t}"
+                    th:selected="${t == selectedType}"
+                    th:text="${t}">
+            </option>
+        </select>
+
+        <select name="biblioId">
+            <option value="">Toutes les bibliothèques</option>
+            <option th:each="b : ${bibliotheques}"
+                    th:value="${b.id}"
+                    th:selected="${b.id == selectedBiblio}"
+                    th:text="${b.nom}">
+            </option>
+        </select>
+
+        <button class="btn-primary" type="submit">🔍 Filtrer</button>
+        <a th:href="@{/catalogue}" class="btn btn-secondary">⟲ Réinitialiser</a>
+    </form>
+
+
+
+    <!-- AFFICHAGE DES RESSOURCES -->
+    <div class="catalogue-grid">
+
+        <th:block th:each="r : ${ressources}">
+            <div class="book-card" th:with="s=${stocks[r.id]}">
+
+              <div class="book-img">
+
+    <span class="badge-stock"
+          th:if="${s != null}"
+          th:text="${s.quantiteDisponible + ' restants'}">
+    </span>
+
+    <!-- Affichage image locale OU URL externe -->
+    <img th:if="${r.cheminCouverture != null}"
+         th:src="${#strings.startsWith(r.cheminCouverture, 'http') 
+                    ? r.cheminCouverture 
+                    : '/uploads/covers/' + r.cheminCouverture}"
+         alt="Couverture">
+
+    <!-- Aucune image -->
+
+  <div th:if="${r.cheminCouverture == null}" class="no-cover">📘</div>
+</div>
+
+                <div class="book-body">
+                    <h3 th:text="${r.titre}" style="margin-bottom:4px;"></h3>
+                    <p th:text="${r.auteur}" style="color:#333;"></p>
+
+                    <div class="info-box">
+                        <strong>Catégorie :</strong> <span th:text="${r.categorie}"></span><br>
+                        <strong>Type :</strong> <span th:text="${r.typeRessource}"></span><br>
+                        <strong>Bibliothèque :</strong> <span th:text="${r.bibliotheque.nom}"></span>
+                    </div>
+
+                   <!-- 🟦 Déjà réservé -->
+<button th:if="${reservees.contains(r.id)}"
+        class="btn-reserver reserved"
+        disabled>
+    Réservé ✔
+</button>
+
+<!-- 🟩 Disponible -->
+<form th:if="${!reservees.contains(r.id)
+               and s != null
+               and s.quantiteDisponible > 0}"
+      th:action="@{/lecteur/prets/reserver/{id}(id=${r.id})}"
+      method="post">
+    <button type="submit" class="btn-reserver">
+        Réserver
+    </button>
+</form>
+
+<!-- 🟥 Indisponible -->
+<button th:if="${s == null or s.quantiteDisponible == 0}"
+        class="btn-reserver"
+        disabled>
+    Indisponible
+</button>
+                </div>
+
+            </div>
+        </th:block>
 
     </div>
 
-</main>
 
+    <!-- PAGINATION -->
+    <div th:replace="fragments/pagination :: pagination(page=${page}, baseUrl=${baseUrl})"></div>
+<div th:replace="layout/footer :: footer"></div>
+
+</main>
 </body>
 </html>

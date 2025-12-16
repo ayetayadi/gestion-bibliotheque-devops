@@ -10,10 +10,10 @@ import java.time.LocalDate;
 @Table(name = "ressource")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(
-        name = "dtype",               // 👈 Hibernate utilise CETTE colonne
+        name = "dtype",              
         discriminatorType = DiscriminatorType.STRING
 )
-@DiscriminatorValue("GENERIC")        // 👈 Valeur fixée pour Hibernate
+@DiscriminatorValue("GENERIC")       
 @Getter @Setter
 public class Ressource {
 
@@ -28,6 +28,7 @@ public class Ressource {
     @Column(nullable = false)
     private String auteur;
 
+    @Column(unique = true, nullable = true)
     private String isbn;
 
     @Column(length = 1000)
@@ -41,7 +42,6 @@ public class Ressource {
 
     private String cheminCouverture;
 
-    // 🔥 VRAI TYPE MÉTIER — indépendant de Hibernate
     @Enumerated(EnumType.STRING)
     @Column(name = "type_ressource", nullable = false)
     private TypeRessource typeRessource;

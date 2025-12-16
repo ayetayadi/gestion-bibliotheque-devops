@@ -28,8 +28,28 @@
     <div th:if="${warning}" class="alert alert-warning auto-hide">
         <span th:text="${warning}"></span>
     </div>
+        <!-- ========================= BARRE DE RECHERCHE / FILTRES ========================= -->
+<form method="get" action="/super-admin/bibliotheques" class="filter-bar">
+
+    <input type="text" name="keyword"
+           placeholder="Rechercher (nom, code, ville...)"
+           th:value="${keyword}">
+
+    <select name="statut">
+        <option value="">Tous les statuts</option>
+        <option value="active" th:selected="${statut == 'active'}">Actives</option>
+        <option value="inactive" th:selected="${statut == 'inactive'}">Inactives</option>
+    </select>
+
+    <button type="submit" class="btn-primary">🔍 Filtrer</button>
+                    <a th:href="@{/super-admin/bibliotheques}" class="btn btn-secondary">⟲ Réinitialiser</a>
+
+</form>
+
 
     <div class="card">
+
+
         <table class="table">
             <thead>
                 <tr>
@@ -75,6 +95,7 @@
             </tbody>
         </table>
     </div>
+    <div th:replace="fragments/pagination :: pagination(${page}, ${baseUrl})"></div>
 </main>
 
 <div th:replace="layout/footer :: footer"></div>

@@ -26,19 +26,38 @@ public class SuperAdminAdminController {
     /* =====================================================
      * LISTE DES ADMINS (PAGINATION)
      * ===================================================== */
-    @GetMapping
-    public String listAdmins(
-            @RequestParam(defaultValue = "0") int page,
-            Model model
-    ) {
-        Page<Utilisateur> result =
-                utilisateurService.getAdminsPaged(PageRequest.of(page, 5));
+@GetMapping("")
+public String listAdmins(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(required = false) String keyword,
+        @RequestParam(required = false) Long biblioId,
+        @RequestParam(required = false) Boolean statut,
+        Model model
+) {
 
-        model.addAttribute("admins", result.getContent());
-        model.addAttribute("page", result);
+    Page<Utilisateur> admins = utilisateurService.searchAdmins(
+            keyword,
+            biblioId,
+            statut,
+            PageRequest.of(page, 10)
+    );
 
-        return "utilisateur/admin/admins";
-    }
+    model.addAttribute("admins", admins.getContent());
+    model.addAttribute("page", admins);
+    model.addAttribute("bibliotheques", bibliothequeService.listAll());
+
+    model.addAttribute("keyword", keyword);
+    model.addAttribute("selectedBiblio", biblioId);
+    model.addAttribute("selectedStatut", statut);
+
+    model.addAttribute("baseUrl",
+            "/super-admin/admins?keyword=" + (keyword != null ? keyword : "")
+            + "&biblioId=" + (biblioId != null ? biblioId : "")
+            + "&statut=" + (statut != null ? statut : "")
+    );
+
+    return "utilisateur/admin/admins";
+}
 
     /* =====================================================
      * FORMULAIRE AJOUT ADMIN

@@ -53,6 +53,24 @@ public class BibliothequeService {
         return bibliothequeRepository.findAll();
     }
 
+
+    public List<Bibliotheque> listAll() {
+        return bibliothequeRepository.findAll();
+    }
+
+    public Page<Bibliotheque> search(String keyword, String statut, Pageable pageable) {
+
+    if (statut != null && statut.equals("active"))
+        return bibliothequeRepository.search(keyword, true, pageable);
+
+    if (statut != null && statut.equals("inactive"))
+        return bibliothequeRepository.search(keyword, false, pageable);
+
+    // sans filtre statut
+    return bibliothequeRepository.search(keyword, null, pageable);
+}
+    // ================= READ BY ID =================
+
     public Bibliotheque getById(Long id) {
         return bibliothequeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Bibliothèque introuvable"));

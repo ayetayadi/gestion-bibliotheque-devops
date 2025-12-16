@@ -9,6 +9,7 @@
 
         <!-- ================= COMMUN ================= -->
         <a th:href="@{/dashboard}" class="menu-item">🏠 Accueil</a>
+
         <a th:href="@{/catalogue}" class="menu-item">📚 Catalogue</a>
 
         <a th:href="@{/profile}" class="menu-item">
@@ -65,12 +66,19 @@
         <!-- ================= LECTEUR ================= -->
         <div sec:authorize="hasRole('LECTEUR')">
 
-            <div class="menu-section">Mon espace</div>
 
-            <a th:href="@{/lecteur/prets}" class="menu-item">
-                📖 Mes prêts & réservations
-            </a>
-        </div>
+<div th:if="${#authorization.expression('hasRole(''LECTEUR'')')}">
+
+    <div class="menu-section">Mon espace</div>
+
+    <a th:href="@{/catalogue}" class="menu-item">📚 Catalogue</a>
+
+    <a th:href="@{/lecteur/prets}" class="menu-item">
+        📖 Mes prêts & réservations
+    </a>
+</div>
+        
+
 
     </nav>
 </aside>
