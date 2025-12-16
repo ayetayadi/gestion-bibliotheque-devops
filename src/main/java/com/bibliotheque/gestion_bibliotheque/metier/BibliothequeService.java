@@ -164,9 +164,6 @@ public class BibliothequeService {
         return result;
     }
     
- // ✅ Utilisée par CatalogueController
-    public List<Bibliotheque> listAll() {
-        return bibliothequeRepository.findAll();
-    }
+ 
 
 }
