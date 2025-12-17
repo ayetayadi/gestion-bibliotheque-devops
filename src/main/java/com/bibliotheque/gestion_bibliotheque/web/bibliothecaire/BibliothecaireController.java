@@ -74,24 +74,26 @@ public String pretsEnCours(
 }
 
     // 2️⃣ Valider un prêt (RESERVE → EMPRUNTE)
-    @PostMapping("/prets/valider/{id}")
-    public String validerPret(@PathVariable Long id,
-                              @AuthenticationPrincipal UserDetailsImpl userDetails,
-                              RedirectAttributes redirectAttrs) {
+@PostMapping("/prets/valider/{id}")
+public String validerPret(@PathVariable Long id,
+                          @AuthenticationPrincipal UserDetailsImpl userDetails,
+                          @RequestParam("dateDebut") String dateDebut,
+                          @RequestParam("dateFin") String dateFin,
+                          RedirectAttributes redirectAttrs) {
 
-        if (userDetails == null) return "redirect:/login";
+    if (userDetails == null) return "redirect:/login";
 
-        Utilisateur bibliothecaire = userDetails.getUtilisateur();
+    Utilisateur bibliothecaire = userDetails.getUtilisateur();
 
-        try {
-            pretWorkflowService.validerEmprunt(id, bibliothecaire);
-            redirectAttrs.addFlashAttribute("success", "Prêt validé !");
-        } catch (Exception e) {
-            redirectAttrs.addFlashAttribute("error", e.getMessage());
-        }
-
-        return "redirect:/bibliothecaire/prets";
+    try {
+        pretWorkflowService.validerEmprunt(id, bibliothecaire, dateDebut, dateFin);
+        redirectAttrs.addFlashAttribute("success", "Prêt validé !");
+    } catch (Exception e) {
+        redirectAttrs.addFlashAttribute("error", e.getMessage());
     }
+
+    return "redirect:/bibliothecaire/prets";
+}
 
     // 3️⃣ Retourner une ressource (EMPRUNTE / EN_COURS → RETOURNE)
     @PostMapping("/prets/retourner/{id}")

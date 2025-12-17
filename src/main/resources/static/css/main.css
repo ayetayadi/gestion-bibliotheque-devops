@@ -984,6 +984,39 @@ body {
 
 
 
+.notif-icon {
+    cursor: pointer;
+    position: relative;
+    font-size: 22px;
+    margin-right: 20px;
+}
+
+.notif-count {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background: red;
+    color: white;
+    padding: 2px 6px;
+    font-size: 12px;
+    border-radius: 50%;
+}
+
+.notif-dropdown {
+    position: absolute;
+    right: 0;
+    top: 40px;
+    width: 260px;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.hidden {
+    display: none;
+
+
 
 
 
@@ -1085,4 +1118,5 @@ body {
 .alert-danger {
     background: #fdecea;
     color: #842029;
+
 }
