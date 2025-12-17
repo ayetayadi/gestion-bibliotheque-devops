@@ -5,7 +5,6 @@
     <title>Dashboard | BiblioNet</title>
 
     <link rel="stylesheet" th:href="@{/css/main.css}">
-
 </head>
 
 <body>
@@ -64,6 +63,66 @@
 </main>
 
 <div th:replace="layout/footer :: footer"></div>
+
+<!-- ====================== SCRIPT NOTIFICATIONS ====================== -->
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const notifBell = document.getElementById("notifBell");
+    const notifCount = document.getElementById("notifCount");
+    const notifList = document.getElementById("notifList");
+    const notifItems = document.getElementById("notifItems");
+
+    if (!notifBell) return;
+
+    notifBell.onclick = () => {
+        notifList.style.display = notifList.style.display === "none" ? "block" : "none";
+        notifCount.style.display = "none";
+    };
+
+    function addNotif(text) {
+        const li = document.createElement("li");
+        li.innerText = text;
+        notifItems.prepend(li);
+    }
+
+    // Chargement initial depuis DB
+    fetch("/api/notifications")
+    .then(r => r.json())
+    .then(list => {
+
+        // Compteur = nombre de prêts non retournés ayant généré une notification
+        notifCount.innerText = list.length;
+        notifCount.style.display = list.length > 0 ? "inline" : "none";
+
+        notifItems.innerHTML = ""; // Clear
+
+        list.forEach(n => {
+            const li = document.createElement("li");
+            li.innerText = n.message;
+            li.style.fontWeight = "bold";
+            li.style.color = "red"; // notification active
+            notifItems.appendChild(li);
+        });
+    });
+
+    // WebSocket live
+    const socket = new SockJS('/ws');
+    const stomp = Stomp.over(socket);
+
+    stomp.connect({}, () => {
+        stomp.subscribe("/user/topic/notifications", msg => {
+            addNotif(msg.body);
+            notifCount.style.display = "inline";
+        });
+    });
+});
+</script>
+
+<!-- ====================== SCRIPT SIDEBAR ====================== -->
 <script>
 function toggleSidebar() {
     document.getElementById("sidebar").classList.toggle("hidden");
@@ -75,6 +134,6 @@ function toggleSubmenu(id) {
         submenu.style.display === "flex" ? "none" : "flex";
 }
 </script>
-</body>
 
+</body>
 </html>

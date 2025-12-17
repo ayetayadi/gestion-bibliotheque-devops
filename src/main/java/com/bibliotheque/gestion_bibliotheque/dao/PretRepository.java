@@ -169,4 +169,12 @@ public interface PretRepository extends JpaRepository<Pret, Long> {
          @Param("lecteur") Utilisateur lecteur
  );
 
+ //websocket
+@Query("""
+    SELECT p FROM Pret p
+    WHERE p.dateFinPrevu < :now
+      AND p.dateRetour IS NULL
+      AND p.statut IN ('EMPRUNTE', 'EN_COURS')
+""")
+List<Pret> findPretsEnRetard(@Param("now") LocalDateTime now);
 }

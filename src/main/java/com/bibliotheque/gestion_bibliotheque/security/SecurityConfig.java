@@ -16,51 +16,43 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-
             .csrf(csrf -> csrf.disable())
 
             .authorizeHttpRequests(auth -> auth
+                // PUBLIC
+                .requestMatchers("/", "/login", "/register",
+                        "/css/**", "/js/**", "/images/**").permitAll()
 
+                // WebSocket + SockJS + STOMP
+                .requestMatchers("/ws/**", "/topic/**", "/app/**", "/user/**").permitAll()
 
-                .requestMatchers(
-                    "/",
-                    "/login",
-                    "/register",
-                    "/css/**",
-                    "/js/**",
-                    "/images/**"
-                ).permitAll()
+                // API CALLS
+                .requestMatchers("/api/**").permitAll()
 
+                // LECTEUR
+                .requestMatchers("/catalogue/**", "/lecteur/**").hasRole("LECTEUR")
 
-                // ================= LECTEUR =================
-                .requestMatchers("/catalogue/**").hasRole("LECTEUR")
-                .requestMatchers("/lecteur/**").hasRole("LECTEUR")
-
-                // ================= BIBLIOTHÉCAIRE =================
+                // BIBLIOTHECAIRE
                 .requestMatchers("/bibliothecaire/**").hasRole("BIBLIOTHECAIRE")
 
-                // ================= ADMINISTRATEUR =================
+                // ADMIN
                 .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                // ================= SUPER ADMIN =================
+                // SUPER ADMIN
                 .requestMatchers("/super-admin/**").hasRole("SUPER_ADMIN")
 
-                // ================= AUTRES =================
                 .anyRequest().authenticated()
             )
 
-            // ================= LOGIN =================
             .formLogin(form -> form
-                    .loginPage("/login")
-                    .loginProcessingUrl("/login")
-                    .usernameParameter("email")
-                    .passwordParameter("password")
-                    .defaultSuccessUrl("/dashboard", true)
-                    .failureUrl("/login?error=true")
-                    .permitAll()
+                .loginPage("/login")
+                .loginProcessingUrl("/login")
+                .usernameParameter("email")
+                .passwordParameter("password")
+                .defaultSuccessUrl("/dashboard", true)
+                .failureUrl("/login?error=true")
+                .permitAll()
             )
-
-            // ================= LOGOUT =================
 
             .logout(logout -> logout
                 .logoutUrl("/logout")
@@ -68,10 +60,11 @@ public class SecurityConfig {
                 .permitAll()
             );
 
+        http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
+
         return http.build();
     }
 
-    // ================= PASSWORD ENCODER =================
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
