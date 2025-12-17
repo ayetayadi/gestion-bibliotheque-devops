@@ -15,6 +15,8 @@
 
     <!-- ================= TITRE + BOUTON ================= -->
     <div class="page-header">
+    
+ 
         <div>
             <h2>📚 Liste des ressources</h2>
             <p class="text-muted">Catalogue de votre bibliothèque</p>
@@ -24,7 +26,19 @@
             ➕ Ajouter une ressource
         </a>
     </div>
+   <!-- ================= MESSAGES DE SUCCÈS ================= -->
+<div th:if="${success}" class="alert alert-success">
+    ✅ Ressource ajoutée avec succès.
+</div>
 
+<div th:if="${updated}" class="alert alert-info">
+    ✏️ Ressource modifiée avec succès.
+</div>
+
+<div th:if="${deleted}" class="alert alert-danger">
+    🗑️ Ressource supprimée avec succès.
+</div>
+   </br>
  <!-- ==================== BARRE DE FILTRES ==================== -->
 <form method="get" action="/ressources" class="filter-bar">
 

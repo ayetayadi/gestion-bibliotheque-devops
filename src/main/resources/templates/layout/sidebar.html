@@ -40,6 +40,14 @@
             <a th:href="@{/admin/bibliothecaires}" class="menu-item">
                 👨‍🏫 Bibliothécaires
             </a>
+            
+            
+    <a th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+   th:href="@{/admin/audit}"
+   class="menu-item">
+    📊 Audit local
+</a>
+    
 
        
         </div>
