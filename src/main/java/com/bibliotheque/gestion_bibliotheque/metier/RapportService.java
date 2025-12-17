@@ -24,97 +24,24 @@ public class RapportService {
     private final StockBibliothequeRepository stockRepository;
     private final RapportRepository rapportRepository;
 
-    // =====================================================
-    // 📊 KPI GLOBAUX (ADMIN)
-    // =====================================================
+    /* =====================================================
+       📊 KPI — PAR BIBLIOTHÈQUE
+       ===================================================== */
 
-    public long totalPrets() {
-        return pretRepository.count();
+    public long totalPretsParBibliotheque(Long bibId) {
+        return pretRepository.countPretsActifsBibliotheque(bibId);
     }
 
-    public long totalPretsActifs() {
-        return pretRepository.countPretsActifs();
+  
+
+    public long totalStockParBibliotheque(Long bibId) {
+        return stockRepository.stockTotalParBibliotheque(bibId);
     }
 
-    public long totalStock() {
-        Long total = stockRepository.totalStock();
-        return total != null ? total : 0;
-    }
+    public double tauxRotationParBibliotheque(Long bibId) {
 
-    public long totalStockEmprunte() {
-        Long emprunte = stockRepository.totalStockEmprunte();
-        return emprunte != null ? emprunte : 0;
-    }
-
-    // =====================================================
-    // 📊 STATISTIQUES DASHBOARD
-    // =====================================================
-
-    /**
-     * 📚 Nombre de prêts par catégorie
-     */
-    public Map<String, Long> pretsParCategorie() {
-
-        Map<String, Long> result = new HashMap<>();
-
-        List<Object[]> data = pretRepository.countPretsParCategorie();
-
-        for (Object[] row : data) {
-            String categorie = String.valueOf(row[0]);
-            Long nb = (Long) row[1];
-            result.put(categorie, nb);
-        }
-
-        return result;
-    }
-
-    /**
-     * 🏛️ Nombre de prêts par bibliothèque
-     */
-    public Map<String, Long> pretsParBibliotheque() {
-
-        Map<String, Long> result = new HashMap<>();
-
-        List<Object[]> data = pretRepository.countPretsParBibliotheque();
-
-        for (Object[] row : data) {
-            String bibliotheque = String.valueOf(row[0]);
-            Long nb = (Long) row[1];
-            result.put(bibliotheque, nb);
-        }
-
-        return result;
-    }
-
-    /**
-     * 👤 Activité des utilisateurs
-     */
-    public Map<String, Long> activiteUtilisateurs() {
-
-        Map<String, Long> result = new HashMap<>();
-
-        List<Object[]> data = pretRepository.countPretsParUtilisateur();
-
-        for (Object[] row : data) {
-            String email = String.valueOf(row[0]);
-            Long nb = (Long) row[1];
-            result.put(email, nb);
-        }
-
-        return result;
-    }
-
-    // =====================================================
-    // 🔄 TAUX DE ROTATION DU STOCK
-    // =====================================================
-
-    /**
-     * 📦 Taux de rotation global (%)
-     */
-    public double tauxRotationGlobal() {
-
-        long total = totalStock();
-        long emprunte = totalStockEmprunte();
+        long total = stockRepository.stockTotalParBibliotheque(bibId);
+        long emprunte = stockRepository.stockEmprunteParBibliotheque(bibId);
 
         if (total == 0) {
             return 0.0;
@@ -123,32 +50,41 @@ public class RapportService {
         return (double) emprunte * 100 / total;
     }
 
-    /**
-     * 📦 Taux de rotation par bibliothèque (%)
-     */
-    public Map<String, Double> tauxRotationParBibliotheque() {
+    /* =====================================================
+       📊 GRAPHIQUES
+       ===================================================== */
 
-        Map<String, Double> result = new HashMap<>();
+    public Map<String, Long> pretsParCategorieParBibliotheque(Long bibId) {
 
-        stockRepository.tauxRotationParBibliotheque().forEach(row -> {
+        Map<String, Long> result = new HashMap<>();
 
-            String bibliotheque = String.valueOf(row[0]);
-            Long emprunte = (Long) row[1];
-            Long total = (Long) row[2];
+        List<Object[]> data =
+                pretRepository.countPretsParCategorieBibliotheque(bibId);
 
-            double taux = (total == null || total == 0)
-                    ? 0.0
-                    : (double) emprunte * 100 / total;
-
-            result.put(bibliotheque, taux);
-        });
+        for (Object[] row : data) {
+            result.put(String.valueOf(row[0]), (Long) row[1]);
+        }
 
         return result;
     }
 
-    // =====================================================
-    // 🧾 HISTORIQUE DES RAPPORTS
-    // =====================================================
+    public Map<String, Long> pretsParStatutParBibliotheque(Long bibId) {
+
+        Map<String, Long> result = new HashMap<>();
+
+        List<Object[]> data =
+                pretRepository.countPretsParStatutBibliotheque(bibId);
+
+        for (Object[] row : data) {
+            result.put(String.valueOf(row[0]), (Long) row[1]);
+        }
+
+        return result;
+    }
+
+    /* =====================================================
+       🧾 RAPPORT
+       ===================================================== */
 
     public Rapport enregistrerRapport(
             TypeRapport type,
@@ -161,7 +97,6 @@ public class RapportService {
                 .generePar(admin)
                 .dateGeneration(LocalDateTime.now())
                 .contenuJson(contenuJson)
-                .cheminExport(cheminExport)
                 .build();
 
         return rapportRepository.save(rapport);
