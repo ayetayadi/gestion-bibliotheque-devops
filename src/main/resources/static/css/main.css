@@ -983,6 +983,7 @@ body {
 }
 
 
+
 .notif-icon {
     cursor: pointer;
     position: relative;
@@ -1014,4 +1015,108 @@ body {
 
 .hidden {
     display: none;
+
+
+
+
+
+
+/* ======================================================= */
+/* 📊 AUDIT / LOGS                                         */
+/* ======================================================= */
+
+/* Ligne hover pour lecture */
+.table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* Badge succès */
+.badge-success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* Badge échec */
+.badge-danger {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Action technique (AJOUT, MODIF, SUPPRESSION) */
+.log-action {
+  font-weight: 600;
+  color: #1e40af;
+}
+
+/* Acteur */
+.log-actor {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* Rôle */
+.log-role {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #e0e7ff;
+  color: #3730a3;
+  font-weight: 600;
+}
+
+/* Cible (ISBN, ID…) */
+.log-target {
+  font-family: monospace;
+  font-size: 13px;
+  color: #475569;
+}
+
+/* Tableau responsive */
+@media (max-width: 900px) {
+  .table thead {
+    display: none;
+  }
+
+  .table tr {
+    display: block;
+    margin-bottom: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 12px;
+  }
+
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border: none;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #64748b;
+  }
+}
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-weight: 500;
+}
+
+.alert-success {
+    background: #e6f4ea;
+    color: #1e7e34;
+}
+
+.alert-info {
+    background: #e8f1ff;
+    color: #084298;
+}
+
+.alert-danger {
+    background: #fdecea;
+    color: #842029;
+
 }

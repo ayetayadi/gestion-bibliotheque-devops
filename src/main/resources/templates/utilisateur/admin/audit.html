@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Audit local | BiblioNet</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+
+<div th:replace="layout/header :: header"></div>
+<div th:replace="layout/sidebar :: sidebar"></div>
+
+<main class="content">
+
+    <div class="page-header">
+        <div>
+            <h2>📊 Audit local – Activités de la bibliothèque</h2>
+            <p class="text-muted">
+                Historique des actions réalisées par les bibliothécaires
+            </p>
+        </div>
+    </div>
+
+    <div class="card">
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Date</th>
+                <th>Acteur</th>
+                <th>Rôle</th>
+                <th>Action</th>
+                <th>Cible</th>
+                <th>Détails</th> <!-- ✅ NOUVEAU -->
+                <th>Résultat</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="log : ${logs}">
+
+                <!-- 📅 Date -->
+                <td data-label="Date"
+                    th:text="${#temporals.format(log.dateAction, 'dd/MM/yyyy HH:mm')}">
+                </td>
+
+                <!-- 👤 Acteur -->
+                <td data-label="Acteur"
+                    th:text="${log.acteur != null ? log.acteur.email : '—'}">
+                </td>
+
+                <!-- 🛡️ Rôle -->
+                <td data-label="Rôle">
+                    <span class="badge badge-blue"
+                          th:text="${log.role}">
+                    </span>
+                </td>
+
+                <!-- ⚙️ Action -->
+                <td data-label="Action"
+                    th:text="${log.action}">
+                </td>
+
+                <!-- 🎯 Cible -->
+                <td data-label="Cible"
+                    th:text="${log.cible}">
+                </td>
+
+                <!-- 📝 DÉTAILS (titre, auteur, etc.) -->
+                <td data-label="Détails"
+                    th:text="${log.details != null ? log.details : '—'}">
+                </td>
+
+                <!-- ✅ / ❌ Résultat -->
+                <td data-label="Résultat">
+                    <span th:if="${log.resultat == 'SUCCESS'}"
+                          class="badge badge-green">
+                        ✔ Succès
+                    </span>
+                    <span th:if="${log.resultat != 'SUCCESS'}"
+                          class="badge badge-red">
+                        ✖ Échec
+                    </span>
+                </td>
+
+            </tr>
+
+            <!-- Cas aucun log -->
+            <tr th:if="${#lists.isEmpty(logs)}">
+                <td colspan="7" class="text-muted" style="text-align:center;">
+                    Aucune activité enregistrée
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+
+    </div>
+</main>
+
+</body>
+</html>

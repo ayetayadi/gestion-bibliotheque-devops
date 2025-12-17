@@ -17,9 +17,9 @@ import com.bibliotheque.gestion_bibliotheque.entities.ressource.TypeCategorie;
 import com.bibliotheque.gestion_bibliotheque.entities.ressource.TypeRessource;
 import com.bibliotheque.gestion_bibliotheque.entities.user.Role;
 import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
+import com.bibliotheque.gestion_bibliotheque.metier.BibliothequeService;
 import com.bibliotheque.gestion_bibliotheque.metier.RessourceService;
 import com.bibliotheque.gestion_bibliotheque.metier.UtilisateurService;
-import com.bibliotheque.gestion_bibliotheque.metier.BibliothequeService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,9 +31,11 @@ public class RessourceController {
 
     private final RessourceService ressourceService;
     private final UtilisateurService utilisateurService;
-    private final BibliothequeService bibliothequeService; 
+    private final BibliothequeService bibliothequeService;
 
-    // LISTE + FILTRES + PAGINATION
+    /* =====================================================
+     * 📚 LISTE + FILTRES + PAGINATION
+     * ===================================================== */
     @GetMapping({"", "/"})
     public String list(
             @RequestParam(defaultValue = "0") int page,
@@ -41,21 +43,24 @@ public class RessourceController {
             @RequestParam(required = false) TypeCategorie categorie,
             @RequestParam(required = false) TypeRessource typeRessource,
             @RequestParam(required = false) Long biblioId,
+            @RequestParam(required = false) String success,
+            @RequestParam(required = false) String updated,
+            @RequestParam(required = false) String deleted,
             Model model
     ) {
+
         Utilisateur user = utilisateurService.getCurrentUser();
 
-        // ⭐ Gestion filtres selon rôle
+        // 🔐 Bibliothécaire → SA bibliothèque uniquement
         if (user.getRole() == Role.BIBLIOTHECAIRE) {
-            // Bibliothécaire → voit SEULEMENT sa bibliothèque
             biblioId = user.getBibliotheque().getId();
         }
 
+        // 👑 Admin → toutes les bibliothèques
         if (user.getRole() == Role.ADMIN) {
             model.addAttribute("bibliotheques", bibliothequeService.getAll());
         }
 
-        // ⭐ Recherche paginée
         Page<Ressource> ressourcesPage = ressourceService.searchCatalogue(
                 keyword,
                 categorie,
@@ -64,21 +69,21 @@ public class RessourceController {
                 PageRequest.of(page, 8)
         );
 
-        var ressources = ressourcesPage.getContent();
-        model.addAttribute("ressources", ressources);
+        model.addAttribute("ressources", ressourcesPage.getContent());
 
-        // ⭐ Stock
-        Map<Long, StockBibliotheque> stocks = ressources.stream()
+        // ✅ STOCK SAFE (aucune exception)
+        Map<Long, StockBibliotheque> stocks = ressourcesPage.getContent()
+                .stream()
                 .collect(Collectors.toMap(
-                        r -> r.getId(),
-                        r -> ressourceService.getStock(r)
+                        Ressource::getId,
+                        r -> ressourceService.getStockSafe(r)
                 ));
         model.addAttribute("stocks", stocks);
 
-        // ⭐ Pagination
+        // Pagination
         model.addAttribute("page", ressourcesPage);
 
-        // ⭐ Garder les valeurs dans le formulaire
+        // Filtres conservés
         model.addAttribute("keyword", keyword);
         model.addAttribute("selectedCategorie", categorie);
         model.addAttribute("selectedType", typeRessource);
@@ -87,7 +92,6 @@ public class RessourceController {
         model.addAttribute("categories", TypeCategorie.values());
         model.addAttribute("typesRessource", TypeRessource.values());
 
-        // ⭐ URL de pagination
         model.addAttribute("baseUrl",
                 "/ressources?keyword=" + (keyword != null ? keyword : "") +
                 "&categorie=" + (categorie != null ? categorie : "") +
@@ -95,10 +99,17 @@ public class RessourceController {
                 "&biblioId=" + (biblioId != null ? biblioId : "")
         );
 
+        // Messages UI
+        model.addAttribute("success", success != null);
+        model.addAttribute("updated", updated != null);
+        model.addAttribute("deleted", deleted != null);
+
         return "bibliothecaire/ressources";
     }
 
-    // AJOUT
+    /* =====================================================
+     * ➕ FORM AJOUT
+     * ===================================================== */
     @GetMapping("/new")
     public String newForm(Model model) {
         model.addAttribute("ressource", new Ressource());
@@ -111,28 +122,32 @@ public class RessourceController {
     public String save(
             @RequestParam String titre,
             @RequestParam String auteur,
+            @RequestParam(required = false) String isbn,
             @RequestParam TypeRessource typeRessource,
             @RequestParam TypeCategorie categorie,
             @RequestParam int quantiteTotale,
-            @RequestParam(required = false) String isbn,
             @RequestParam("couvertureFile") MultipartFile couvertureFile
     ) throws Exception {
 
-        Utilisateur utilisateur = utilisateurService.getCurrentUser();
+        Utilisateur user = utilisateurService.getCurrentUser();
 
         ressourceService.ajouterRessource(
-                titre, auteur, isbn, typeRessource, categorie,
-                quantiteTotale, couvertureFile, utilisateur
+                titre, auteur, isbn,
+                typeRessource, categorie,
+                quantiteTotale, couvertureFile, user
         );
 
-        return "redirect:/ressources/?success";
+        return "redirect:/ressources?success";
     }
 
-    // EDIT
+    /* =====================================================
+     * ✏️ FORM MODIFICATION
+     * ===================================================== */
     @GetMapping("/edit/{id}")
     public String editForm(@PathVariable Long id, Model model) {
+
         Ressource r = ressourceService.getById(id);
-        StockBibliotheque stock = ressourceService.getStock(r);
+        StockBibliotheque stock = ressourceService.getStockSafe(r);
 
         model.addAttribute("ressource", r);
         model.addAttribute("stock", stock);
@@ -153,18 +168,31 @@ public class RessourceController {
             @RequestParam("couvertureFile") MultipartFile couvertureFile
     ) throws Exception {
 
+        Utilisateur user = utilisateurService.getCurrentUser();
+
         ressourceService.modifierRessource(
-                id, titre, auteur, typeRessource, categorie, quantiteTotale, couvertureFile
+                id,
+                titre,
+                auteur,
+                typeRessource,
+                categorie,
+                quantiteTotale,
+                couvertureFile,
+                user
         );
 
-        return "redirect:/ressources/?updated";
+        return "redirect:/ressources?updated";
     }
 
-    // SUPPRESSION
+    /* =====================================================
+     * 🗑️ SUPPRESSION
+     * ===================================================== */
     @GetMapping("/delete/{id}")
-    public String deleteRessource(@PathVariable Long id) {
-        Utilisateur utilisateur = utilisateurService.getCurrentUser();
-        ressourceService.supprimerRessource(id, utilisateur);
-        return "redirect:/ressources/?deleted";
+    public String delete(@PathVariable Long id) {
+
+        Utilisateur user = utilisateurService.getCurrentUser();
+        ressourceService.supprimerRessource(id, user);
+
+        return "redirect:/ressources?deleted";
     }
 }

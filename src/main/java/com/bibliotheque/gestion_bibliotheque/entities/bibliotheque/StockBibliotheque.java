@@ -22,7 +22,7 @@ public class StockBibliotheque {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ////📍 Bibliothèque propriétaire du stock
+    // 📍 Bibliothèque propriétaire du stock
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "bibliotheque_id")
     private Bibliotheque bibliotheque;
@@ -40,11 +40,15 @@ public class StockBibliotheque {
     @Column(nullable = false)
     private int quantiteDisponible;
 
-    // 🔄 Quantité actuellement empruntée (UTILISÉE POUR LE TAUX DE ROTATION)
+    // 🔄 Quantité actuellement empruntée
     @Column(nullable = false)
     private int quantiteEmpruntee = 0;
 
     // ⏳ Quantité réservée
     @Column(nullable = false)
     private int quantiteReservee = 0;
+
+    // ⭐ KPI ADMIN — nombre total d’emprunts historiques
+    @Column(name = "total_emprunts", nullable = false)
+    private int totalEmprunts = 0;
 }
