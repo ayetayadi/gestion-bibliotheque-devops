@@ -1,6 +1,6 @@
 name: CI Pipeline
 
-"on":
+on:
   push:
     branches:
       - develop
@@ -25,6 +25,3 @@ jobs:
 
       - name: Build and run tests
         run: mvn clean test
-
-      - name: Package application
-        run: mvn clean package -DskipTests
