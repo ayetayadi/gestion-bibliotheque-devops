@@ -2,19 +2,22 @@ package com.bibliotheque.gestion_bibliotheque.entities.ressource;
 
 import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.Bibliotheque;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 @Entity
 @Table(name = "ressource")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(
-        name = "dtype",               // 👈 Hibernate utilise CETTE colonne
+        name = "dtype",              
         discriminatorType = DiscriminatorType.STRING
 )
-@DiscriminatorValue("GENERIC")        // 👈 Valeur fixée pour Hibernate
-@Getter @Setter
+@DiscriminatorValue("GENERIC")       
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Ressource {
 
     @Id
@@ -28,6 +31,7 @@ public class Ressource {
     @Column(nullable = false)
     private String auteur;
 
+    @Column(unique = true, nullable = true)
     private String isbn;
 
     @Column(length = 1000)
@@ -41,7 +45,6 @@ public class Ressource {
 
     private String cheminCouverture;
 
-    // 🔥 VRAI TYPE MÉTIER — indépendant de Hibernate
     @Enumerated(EnumType.STRING)
     @Column(name = "type_ressource", nullable = false)
     private TypeRessource typeRessource;

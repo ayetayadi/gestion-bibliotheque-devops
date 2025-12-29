@@ -11,9 +11,16 @@
 <div th:replace="layout/sidebar :: sidebar"></div>
 
 <main class="content">
+<div th:if="${success}" class="alert alert-success auto-hide">
+    <span th:text="${success}"></span>
+</div>
 
+<div th:if="${error}" class="alert alert-error auto-hide">
+    <span th:text="${error}"></span>
+</div>
     <div class="page-header">
         <h2>Modifier un bibliothécaire</h2>
+
 
         <p th:if="${bibliotheque != null}">
             Bibliothèque :
@@ -68,6 +75,12 @@
 </main>
 
 <div th:replace="layout/footer :: footer"></div>
+<script>
+    setTimeout(() => {
+        document.querySelectorAll('.auto-hide')
+                .forEach(a => a.remove());
+    }, 3500);
+</script>
 
 </body>
 </html>

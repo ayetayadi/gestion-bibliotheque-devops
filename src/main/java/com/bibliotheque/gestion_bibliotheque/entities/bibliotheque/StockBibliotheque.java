@@ -2,18 +2,20 @@ package com.bibliotheque.gestion_bibliotheque.entities.bibliotheque;
 
 import com.bibliotheque.gestion_bibliotheque.entities.ressource.Ressource;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Getter
-@Setter
+@Data
 @Table(
     name = "stock_bibliotheque",
     uniqueConstraints = {
         @UniqueConstraint(columnNames = {"bibliotheque_id", "ressource_id"})
     }
 )
+@AllArgsConstructor
+@NoArgsConstructor
 public class StockBibliotheque {
 
     @Id
@@ -38,11 +40,15 @@ public class StockBibliotheque {
     @Column(nullable = false)
     private int quantiteDisponible;
 
-    // 🔄 Quantité actuellement empruntée (UTILISÉE POUR LE TAUX DE ROTATION)
+    // 🔄 Quantité actuellement empruntée
     @Column(nullable = false)
     private int quantiteEmpruntee = 0;
 
     // ⏳ Quantité réservée
     @Column(nullable = false)
     private int quantiteReservee = 0;
+
+    // ⭐ KPI ADMIN — nombre total d’emprunts historiques
+    @Column(name = "total_emprunts", nullable = false)
+    private int totalEmprunts = 0;
 }

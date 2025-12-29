@@ -52,7 +52,10 @@
                 <th>Bibliothèque</th>
                 <th>Statut</th>
                 <th>Date réservation</th>
-                <th>Date retour</th>
+<th>Date début d'emprunt</th>
+<th>Date prévue retour</th>
+<th>Date retour</th>
+<th>Date clôture</th>
                 <th>Actions</th>
             </tr>
             </thead>
@@ -60,7 +63,8 @@
             <tbody>
 
             <!-- 🔁 LISTE DES PRETS -->
-            <tr th:each="pret : ${prets}">
+            <tr th:each="pret : ${page.content}">
+
 
                 <!-- TITRE RESSOURCE -->
                 <td th:text="${pret.ressource.titre}">Titre</td>
@@ -79,11 +83,36 @@
                     </span>
                 </td>
 
-                <!-- DATE RÉSERVATION -->
-                <td th:text="${pret.dateReservation != null ? pret.dateReservation : '-'}"></td>
+<!-- DATE RÉSERVATION -->
+<td th:text="${pret.dateReservation != null 
+              ? #temporals.format(pret.dateReservation, 'dd/MM/yyyy HH:mm') 
+              : '-'}">
+</td>
 
-                <!-- DATE RETOUR -->
-                <td th:text="${pret.dateRetour != null ? pret.dateRetour : '-'}"></td>
+<!-- DATE DÉBUT D'EMPRUNT (bibliothécaire) -->
+<td th:text="${pret.dateDebutEmprunt != null 
+              ? #temporals.format(pret.dateDebutEmprunt, 'dd/MM/yyyy HH:mm') 
+              : '-'}">
+</td>
+
+<!-- DATE PRÉVUE RETOUR -->
+<td th:text="${pret.dateFinPrevu != null 
+              ? #temporals.format(pret.dateFinPrevu, 'dd/MM/yyyy HH:mm') 
+              : '-'}">
+</td>
+
+<!-- DATE RETOUR EFFECTIF (lecteur) -->
+<td th:text="${pret.dateRetour != null 
+              ? #temporals.format(pret.dateRetour, 'dd/MM/yyyy HH:mm') 
+              : '-'}">
+</td>
+
+<!-- DATE CLÔTURE -->
+<td th:text="${pret.dateCloture != null 
+              ? #temporals.format(pret.dateCloture, 'dd/MM/yyyy HH:mm') 
+              : '-'}">
+</td>
+
 
                 <!-- ACTIONS -->
                 <td>
@@ -94,14 +123,14 @@
                           method="post"
                           onsubmit="return confirm('Annuler cette réservation ?');">
 
-                        <button class="btn btn-danger btn-sm">❌ Annuler</button>
+                        <button class="btn btn-danger btn-sm">Annuler</button>
                     </form>
 
                     <!-- 🔄 RETOURNER -->
                     <form th:if="${pret.statut.name() == 'EN_COURS' or pret.statut.name() == 'EMPRUNTE'}"
                           th:action="@{/lecteur/prets/retourner/{id}(id=${pret.id})}"
                           method="post">
-                        <button class="btn btn-warning btn-sm">🔄 Retourner</button>
+                        <button class="btn btn-warning btn-sm">Retourner</button>
                     </form>
 
                     <!-- Aucune action possible -->
@@ -123,8 +152,9 @@
             </tbody>
         </table>
     </div>
+<div th:replace="fragments/pagination :: pagination(${page}, ${baseUrl})"></div>
 
 </main>
-
+<div th:replace="layout/footer :: footer"></div>
 </body>
 </html>

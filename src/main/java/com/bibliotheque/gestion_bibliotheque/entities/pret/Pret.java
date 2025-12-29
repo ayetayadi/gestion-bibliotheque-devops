@@ -11,15 +11,18 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.StockBibliotheque;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 
 @Entity
-@Getter
-@Setter
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Pret {
 
     @Id

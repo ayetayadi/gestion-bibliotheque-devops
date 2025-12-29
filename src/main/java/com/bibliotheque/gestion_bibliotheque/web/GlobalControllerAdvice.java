@@ -31,4 +31,19 @@ public class GlobalControllerAdvice {
 
         return utilisateurService.getByEmail(auth.getName());
     }
+
+    @ModelAttribute("username")
+public String username() {
+    Authentication auth =
+            SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null
+            || !auth.isAuthenticated()
+            || auth instanceof AnonymousAuthenticationToken) {
+        return null;
+    }
+
+    return auth.getName(); 
+}
+
 }
