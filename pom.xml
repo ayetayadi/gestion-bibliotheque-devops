@@ -22,6 +22,17 @@
         <lombok.version>1.18.32</lombok.version>
     </properties>
 
+    <!-- Force Micrometer version for CI stability -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-commons</artifactId>
+                <version>1.12.4</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement> 
+    
     <dependencies>
 
         <dependency>

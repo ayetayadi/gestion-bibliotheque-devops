@@ -19,7 +19,9 @@ import com.bibliotheque.gestion_bibliotheque.entities.bibliotheque.Bibliotheque;
 import com.bibliotheque.gestion_bibliotheque.entities.user.Utilisateur;
 import com.bibliotheque.gestion_bibliotheque.metier.RapportService;
 import com.bibliotheque.gestion_bibliotheque.metier.UtilisateurService;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {
