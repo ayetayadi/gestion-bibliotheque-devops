@@ -6,11 +6,13 @@ services:
     image: mysql:8.0
     container_name: mysql-bibliotheque
     restart: always
+    env_file:
+      - .env
     environment:
-      MYSQL_DATABASE: gestion_bibliotheque
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "3306:3306"
+      - "${DB_PORT}:3306"
     volumes:
       - mysql-data:/var/lib/mysql
 
@@ -19,12 +21,14 @@ services:
     container_name: springboot-bibliotheque
     depends_on:
       - mysql-db
+    env_file:
+      - .env
     ports:
-      - "8080:8080"
+      - "${APP_PORT}:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/gestion_bibliotheque?useSSL=false&allowPublicKeyRetrieval=true
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
 
 volumes:
