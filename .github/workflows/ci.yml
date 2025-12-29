@@ -32,7 +32,7 @@ jobs:
       # ÉTAPE 2 : Lancer les tests
       - name: Run tests
         run: mvn test
-        # ↑ Lance tes 4 tests
+        # ↑ Lance les 4 tests
       
       # ÉTAPE 3 : Sauvegarder le JAR (artefact)
       - name: Upload JAR artifact
