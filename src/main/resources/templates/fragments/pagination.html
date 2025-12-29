@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<div th:fragment="pagination(page, baseUrl)" class="pagination">
+<div th:fragment="pagination(page, baseUrl)" th:if="${page.totalPages > 0}" class="pagination">
 
     <!-- Bouton précédent -->
     <a th:if="${page.hasPrevious()}"
