@@ -20,17 +20,24 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # 1️. Build de l'application
+      # 1️ Build de l'application
       - name: Build application
         run: mvn clean package -DskipTests
 
-      # 2️. Build de l’image Docker (tag versionné)
-      - name: Build Docker image
-        run: |
-          docker build -t gestion-bibliotheque:1.0 .
+      # 2️ Login Docker Hub
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
-      # 3️. Déploiement via SSH
-      - name: Deploy via SSH
+      # 3️ Build image Docker
+      - name: Build Docker image
+        run: docker build -t ayetayadi01/gestion-bibliotheque:1.0 .
+
+      # 4️ Push image Docker Hub
+      - name: Push Docker image
+        run: docker push ayetayadi01/gestion-bibliotheque:1.0
+
+      # 5️ Déploiement sur la VM
+      - name: Deploy on Azure VM
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -38,5 +45,4 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
             cd /opt/gestion-bibliotheque
-            chmod +x deploy.sh
             ./deploy.sh
