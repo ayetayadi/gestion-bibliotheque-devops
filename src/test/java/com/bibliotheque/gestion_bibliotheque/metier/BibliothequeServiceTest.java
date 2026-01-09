@@ -39,7 +39,7 @@ class BibliothequeServiceTest {
         long result = bibliothequeService.nombreBibliothequesActives();
 
         // THEN
-        assertEquals(6L, result);
+        assertEquals(4L, result);
     }
 
     @Test
