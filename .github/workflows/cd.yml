@@ -3,8 +3,7 @@ name: CD Pipeline
 on:
   workflow_run:
     workflows: ["CI Pipeline"]
-    types:
-      - completed
+    types: [completed]
 
 permissions:
   actions: read
@@ -16,31 +15,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout du code (Dockerfile, compose, scripts)
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # 2️⃣ Télécharger l’artefact du run CI déclencheur
       - name: Download JAR artifact from CI
         uses: actions/download-artifact@v4
         with:
           name: application-jar
           path: target/
           run-id: ${{ github.event.workflow_run.id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      # 3️⃣ Login Docker Hub
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
-      # 4️⃣ Build image Docker
       - name: Build Docker image
         run: docker build -t ayetayadi01/gestion-bibliotheque:1.0 .
 
-      # 5️⃣ Push image Docker Hub
       - name: Push Docker image
         run: docker push ayetayadi01/gestion-bibliotheque:1.0
 
-      # 6️⃣ Déploiement sur la VM Azure
       - name: Deploy on Azure VM
         uses: appleboy/ssh-action@v1.0.3
         with:
